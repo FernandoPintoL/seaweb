@@ -12,14 +12,7 @@ class GaleriaVisitanteController extends Controller
 {
     public function uploadimage(Request $request){
         try{
-            /*return response()->json([
-                "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
-                "messages" => $request->hasFile('image'),
-                "messagesValue" => $request->hasFile('imageValue'),
-                "data" => $request->all()
-            ]);*/
+            /**/
             $model = GaleriaVisitante::create(["visitante_id" => $request->get("id")]);
             $response = "";
             $path     = null;
@@ -28,7 +21,14 @@ class GaleriaVisitanteController extends Controller
                 
                 $extension = $request->file('file')->getClientOriginalExtension();
                 $filename= "cod".$model->id."visitanteid".$request->get("id").'.'.$extension;
-
+                return response()->json([
+                    "isRequest"=> true,
+                    "success" => true,
+                    "messageError" => false,
+                    "messages" => $request->hasFile('image'),
+                    "messagesValue" => $request->hasFile('imageValue'),
+                    "data" => $request->all()
+                ]);
                 $path = $request->file('file')->storeAs('galeriavisitantes', $filename);
 
                 /*ACTUALIZA LA TABLA CON LA RUTA*/
