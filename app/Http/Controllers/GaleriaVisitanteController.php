@@ -25,8 +25,8 @@ class GaleriaVisitanteController extends Controller
                     "isRequest"=> true,
                     "success" => true,
                     "messageError" => false,
-                    "messages" => $request->hasFile('image'),
-                    "messagesValue" => $request->hasFile('imageValue'),
+                    "messages" => $request->hasFile('file'),
+                    "messagesValue" => $request->hasFile('file'),
                     "data" => $request->all()
                 ]);
                 $path = $request->file('file')->storeAs('galeriavisitantes', $filename);
