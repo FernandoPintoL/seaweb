@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Condominio;
-use App\Models\perfil;
+use App\Models\Perfil;
 class CondominioSeeder extends Seeder
 {
     /**
