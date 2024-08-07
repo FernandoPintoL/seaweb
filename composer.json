@@ -12,6 +12,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "laraveles/spanish": "^1.5",
+        "league/flysystem-aws-s3-v3": "3.0",
         "spatie/laravel-permission": "^6.7",
         "tightenco/ziggy": "^2.0"
     },
@@ -51,7 +52,10 @@
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi",
             "@php artisan storage:link",
-            "@php artisan optimize"
+            "@php artisan optimize",
+            "@php artisan storage:unlink",
+            "@php artisan optimize",
+            "@php artisan storage:link"
         ]
     },
     "extra": {

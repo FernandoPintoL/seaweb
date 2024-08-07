@@ -10,6 +10,9 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
+        './resources/**/*.js',
+        './resources/**/*.vue',
+        './node_modules/preline/dist/*.js',
     ],
 
     theme: {
@@ -20,5 +23,10 @@ export default {
         },
     },
 
-    plugins: [forms, typography],
+    plugins: [
+        // forms,
+        typography,
+        // require('flowbite/plugin')
+        require('preline/plugin'),
+    ],
 };
