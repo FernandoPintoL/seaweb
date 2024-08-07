@@ -67,21 +67,19 @@ class HabitanteController extends Controller
      */
     public function query(Request $request){
         try{
-            $responsse = Habitante::with('perfil')
+            /*$responsse = Habitante::with('perfil')
                          ->with('vivienda')
                          ->orderBy('id', 'DESC')
-                         ->get();
-            /**$queryStr  = $request->get( 'query' );
+                         ->get();*/
+            $queryStr  = $request->get( 'query' );
             $responsse = DB::table('habitantes as h')
-                        ->select('h.*','p.*','td.*','vd.*')
+                        ->select('h.id as id','h.*','p.id as id_perfil','p.name','p.nroDocumento','vd.id as id_vivienda','vd.nroVivienda')
                         ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
-                        ->join('viviendas as vd', 'h.vivienda_id', '=', 'h.id')
-                        ->join('tipo_documentos as td', 'p.tipo_documento_id', '=', 'td.id')
-                        ->where('h.id','LIKE','%'.$queryStr.'%')
-                        ->orWhere('p.nroDocumento','LIKE','%'.$queryStr.'%')
+                        ->join('viviendas as vd', 'h.vivienda_id', '=', 'vd.id')
+                        ->where('p.nroDocumento','LIKE','%'.$queryStr.'%')
                         ->orWhere('p.name','LIKE','%'.$queryStr.'%')
                         ->orWhere('vd.nroVivienda','LIKE','%'.$queryStr.'%')
-                        ->get();**/
+                        ->get();
             return response()->json([
                 "isRequest"=> true,
                 "success" => true,
@@ -169,6 +167,8 @@ class HabitanteController extends Controller
                 'vivienda_id' => $request->vivienda_id,
                 'perfil_id' => $perfil->id,
                 'profile_photo_path' => '',
+                'created_at' => toDay(),
+                'updated_at' => toDay(),
             ]);
             return response()->json([
                 "isRequest"=> true,

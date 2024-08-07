@@ -11,6 +11,7 @@ class GaleriaVisitante extends Model
     use HasFactory;
     protected $table = "galeria_visitantes";
     protected $primaryKey = "id";
+    public $timestamps = false;
     protected $fillable = [
         'photo_path',
         'detalle',

@@ -19,14 +19,18 @@ class GaleriaVehiculoController extends Controller
                 "message" => "Mensaje",
                 "data" => $request->all()
             ]);*/
-            $model = GaleriaVehiculo::create(["vehiculo_id" => $request->get("id")]);
+            $model = GaleriaVehiculo::create([
+                "vehiculo_id" => $request->get("id"),
+                'created_at' => $request->get("created_at"),
+                'updated_at' => $request->get("updated_at"),
+            ]);
             $response = "";
             $path     = null;
 
             if($request->hasFile('file')){
                 $extension = $request->file('file')->getClientOriginalExtension();
-                $filename= "cod".$model->id."vehiculoid".$request->get("id").'.'.$extension;
-                $path = $request->file('file')->storeAs('galeriavehiculos', $filename);
+                $filename= "cod".$model->id."-vehiculoid".$request->get("id").'.'.$extension;
+                $path = $request->file('file')->storeAs('vehiculos', $filename, 'public');
                 //$path = Storage::putFileAs('images', $request->file('file'), $filename);
                 $url = Storage::url($path);
                 //$item = Item::find($request->get("id"))->first();

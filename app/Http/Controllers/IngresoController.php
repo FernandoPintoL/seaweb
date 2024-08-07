@@ -12,17 +12,82 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
 
 class IngresoController extends Controller
 {
     public function query(Request $request){
         try{
             $queryStr    = $request->get('query');
-            $response = Ingreso::where('id','LIKE',"%".$queryStr."%")
+            $start    = $request->get('start');
+            $end    = $request->get('end');
+            /*$response = Ingreso::where('id','LIKE',"%".$queryStr."%")
                         ->with('residente')
                         ->with('visitante')
                         ->with('vehiculo')
                         ->with('tipoVisita')
+                        ->orderBy('id', 'DESC')
+                        ->get();*/
+            $queryStr  = $request->get( 'query' );
+            $responsse = DB::table('ingresos as i')
+                        ->select('i.id as id',
+                                'i.*',
+                                'h.id as id_residente',
+                                'p.name as name_residente',
+                                'p.nroDocumento as nroDocumento_residente',
+                                'vvd.nroVivienda',
+                                'v.id as id_visitante',
+                                'v.is_permitido',
+                                'v.description_is_no_permitido',
+                                'pv.nroDocumento as nroDocumento_visitante',
+                                'pv.name as name_visitante',
+                                'tv.id as tv_id',
+                                'tv.sigla as tv_sigla',
+                                'tv.detalle as tv_detalle')
+                        ->join('habitantes as h', 'h.id', '=', 'i.residente_habitante_id')
+                        ->join('viviendas as vvd', 'vvd.id', '=', 'h.id')
+                        ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
+                        ->join('visitantes as v', 'v.id', '=', 'i.visitante_id')
+                        ->join('perfils as pv', 'v.perfil_id', '=', 'pv.id')
+                        ->join('tipo_visitas as tv', 'i.tipo_visita_id', '=', 'tv.id')
+                        ->where('p.name','LIKE','%'.$queryStr.'%')
+                        ->orWhere('pv.name','LIKE','%'.$queryStr.'%')
+                        //->orWhereBetween('i.created_at',[$start, $end])
+                        ->orderBy('id', 'DESC')
+                        ->get();
+
+            return response()->json([
+                "isRequest"=> true,
+                "success" => true,
+                "messageError" => false,
+                "message" => "Consulta Ingreso realizada correctamente...",
+                "data" => $responsse
+            ]);
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "success" => false,
+                "messageError" => true,
+                "message" => "Consulta ingreso/ ".$message." Code: ".$code,
+                "data" => []
+            ]);
+        }
+    }
+
+    public function queryDate(Request $request){
+        try{
+            $start    = $request->get('start');
+            $end    = $request->get('end');
+            $response = DB::table('ingresos as i')
+                        ->select('i.id as id','i.*','h.id as id_residente','p.name as name_residente','v.id as id_visitante','pv.name as name_visitante')
+                        ->join('habitantes as h', 'h.id', '=', 'i.residente_habitante_id')
+                        ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
+                        ->join('visitantes as v', 'v.id', '=', 'i.visitante_id')
+                        ->join('perfils as pv', 'v.perfil_id', '=', 'pv.id')
+                        ->whereBetween('i.created_at',[$start, $end])
                         ->orderBy('id', 'DESC')
                         ->get();
             return response()->json([
@@ -67,42 +132,13 @@ class IngresoController extends Controller
     public function store(StoreIngresoRequest $request)
     {
         try{
-            /* return response()->json([
-                "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
-                "message" => "Llegando de la api..",
-                "data" => $request->perfil
-            ]); */
-            // if($request->isMobile){
-                /*$perfilrequest = $request->perfil;
-                $vehiculorequest = $request->vehiculo;
-
-                //creamos perfil
-                if($request->isNewVisitante){
-                    $perfil = Perfil::create($perfilrequest);
-                    $visitante = Visitante::create([
-                        'perfil_id' => $perfil->id
-                    ]);
-                    $idVisitante = $visitante->id;
-                }
-
-                if($request->isIngresoConVehiculo){
-                    if($request->isNewVehiculo){
-                        $vehiculo = Vehiculo::create( $vehiculorequest );
-                        $idVehiculo = $vehiculo->id;
-                    }else{
-                        $idVehiculo = $request->vehiculo_id;
-                    }
-                }else{
-                    $idVehiculo = null;
-                }*/
-
-                
-            // }else{
-                // $perfil = Perfil::create($request->all());
-                //TODAVIA NO CREA DESDE LA WEB
-            // }
+            if($request->get('black_list')){
+                $visitante = Visitante::findOrFail( $request->get('visitante_id'));
+                $visitante->update( [
+                        'is_permitido' => false,
+                        'description_is_no_permitido' => $request->get('detalle')
+                ] );
+            }
             $responsse = Ingreso::create([
                 'tipo_ingreso' => $request->tipo_ingreso,
                 'detalle'=> $request->detalle,
@@ -113,12 +149,40 @@ class IngresoController extends Controller
                 'vehiculo_id'=> $request->vehiculo_id == 0 ? null : $request->vehiculo_id, ///FK
                 'tipo_visita_id' => $request->tipo_visita_id, ///FK
                 'user_id' => $request->user_id == 0 ? auth()->user()->id : $request->user_id,///FK
+                'created_at' => $request->created_at,
+                'updated_at' => $request->updated_at,
             ]);
             return response()->json([
                 "isRequest"=> true,
                 "success" => $responsse != null,
                 "messageError" => $responsse != null,
-                "message" => $responsse != null ? "Registro completo" : "Error!!!",
+                "message" => $responsse != null ? "Registro de datos correcto" : "Error!!!",
+                "data" => $responsse
+            ]);
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "success" => false,
+                "messageError" => true,
+                "message" => $message." Code: ".$code,
+                "data" => []
+            ]);
+        }
+    }
+
+    public function registerSalida(Request $request, Ingreso $appingreso){
+        try{
+            $responsse = $appingreso->update([
+                'salida_created_at' => $request->salida_created_at,
+                'salida_updated_at' => $request->salida_updated_at,
+            ]);
+            return response()->json([
+                "isRequest"=> true,
+                "success" => $responsse != null,
+                "messageError" => $responsse != null,
+                "message" => $responsse != null ? "Datos de salida actualizados correctamente" : "Error!!!",
                 "data" => $responsse
             ]);
         }catch(\Exception $e){
@@ -194,36 +258,13 @@ class IngresoController extends Controller
     public function update(UpdateIngresoRequest $request, Ingreso $appingreso)
     {
         try{
-            /*return response()->json([
-                "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
-                "message" => "Llegando de la api..",
-                "data" => $request->all()
-            ]); */
-            //creamos perfil
-                /*if($request->isNewVisitante){
-                    $profileId     = $request->perfil->id;
-                    $perfil = Perfil::findOrFail($profileId);
-                    $response  = $perfil->update( $request->perfil );
-                }
-                if($request->isIngresoConVehiculo){
-                    if($request->isNewVehiculo){
-                        if($request->vehiculo_id == 0){
-                            $vehiculo = Vehiculo::create($request->vehiculo);
-                            $idVehiculo = $vehiculo->id;
-                        }else{
-                            $vehiculoID = $request->vehiculo->id;
-                            $vehiculo = Vehiculo::findOrFail($vehiculoID);
-                            $vehiculo->update($request->vehiculo);
-                            $idVehiculo = $vehiculoID;
-                        }
-                    }else{
-                        $idVehiculo = $request->vehiculo_id;
-                    }
-                }else{
-                    $idVehiculo = null;
-                }*/
+            if($request->get('black_list')){
+                $visitante = Visitante::findOrFail( $request->get('visitante_id'));
+                $visitante->update( [
+                        'is_permitido' => false,
+                        'description_is_no_permitido' => $request->get('detalle')
+                ] );
+            }
             $responsse = $appingreso->update([
                 'tipo_ingreso' => $request->tipo_ingreso,
                 'detalle'=> $request->detalle,
@@ -233,7 +274,8 @@ class IngresoController extends Controller
                 'autoriza_habitante_id'=> $request->autoriza_habitante_id,
                 'vehiculo_id'=> $request->vehiculo_id != 0 ? $request->vehiculo_id : null,  ///FK
                 'tipo_visita_id' => $request->tipo_visita_id, ///FK
-                'user_id' => $request->user_id,///FK
+                'user_id' => $request->user_id,
+                'updated_at' => toDay(),
             ]);
             return response()->json([
                 "isRequest"=> true,

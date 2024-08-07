@@ -7,40 +7,50 @@ use App\Http\Requests\StoreGaleriaVisitanteRequest;
 use App\Http\Requests\UpdateGaleriaVisitanteRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use Illuminate\Http\File;
 
 class GaleriaVisitanteController extends Controller
 {
     public function uploadimage(Request $request){
         try{
-            /**/
-            $model = GaleriaVisitante::create(["visitante_id" => $request->get("id")]);
-            $response = "";
+            /*return response()->json([
+                "isRequest"=> true,
+                "success" => true,
+                "messageError" => false,
+                "messages" => $request->hasFile('image'),
+                "messagesValue" => $request->hasFile('imageValue'),
+                "data" => $request->all()
+            ]);*/
+            
+            $response = null;
             $path     = null;
 
             if($request->hasFile('file')){
-                
-                $extension = $request->file('file')->getClientOriginalExtension();
-                $filename= "cod".$model->id."visitanteid".$request->get("id").'.'.$extension;
-                return response()->json([
-                    "isRequest"=> true,
-                    "success" => true,
-                    "messageError" => false,
-                    "messages" => $request->hasFile('file'),
-                    "messagesValue" => $request->hasFile('file'),
-                    "data" => $request->all()
+                $model = GaleriaVisitante::create([
+                    "visitante_id" => $request->get("id"), 
+                    'created_at' => $request->get("created_at"),
+                    'updated_at' => $request->get("updated_at")
                 ]);
-                $path = $request->file('file')->storeAs('galeriavisitantes', $filename);
-
+                $file = $request->file( 'file' );
+                $extension = $file->getClientOriginalExtension();
+                $filename= "cod".$model->id."-visitanteid".$request->get("id").'.'.$extension;
+                $path = $file->storeAs('visitantes', $filename, 'public');
+                //$path = Storage::putFileAs('/visitantes', $request->file('file'), $filename);
+                //$path = Storage::disk('s3')->put('visitantes', $file);
+                
                 /*ACTUALIZA LA TABLA CON LA RUTA*/
                 $url = Storage::url($path);
-                $response = $model->update(['photo_path'=> $url,'detalle'=>$filename]);
+                $response = $model->update([
+                    'photo_path'=> $url,
+                    'detalle'=> $path
+                ]);
             }
             return response()->json([
                 "isRequest"=> true,
-                "success" => $response,
-                "messageError" => !$response && !$request->hasFile('file'),
+                "success" => $request->hasFile('file'),
+                "messageError" => !$request->hasFile('file'),
                 "message" => isset($path) ? "Archivos subidos" : "Archivos no subidos",
-                "data" => $model
+                "data" => $response
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();

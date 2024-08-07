@@ -47,7 +47,8 @@ class CondominioController extends Controller
      */
     public function index()
     {
-        $listado = Condominio::all();
+        $listado = Condominio::with('perfil')
+                        ->with('user')->get();
         return Inertia::render("Condominio/Index", ['listado'=> $listado]);
     }
 

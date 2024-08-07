@@ -16,10 +16,13 @@ class Ingreso extends Model
     use HasFactory;
     protected $table = "ingresos";
     protected $primaryKey = "id";
+    public $timestamps = false;
     protected $fillable = [
         'tipo_ingreso',
         'detalle',
         'isAutorizado',
+        'salida_created_at',
+        'salida_updated_at',
         'visitante_id', ///FK
         'residente_habitante_id', ///FK
         'autoriza_habitante_id', ///FK

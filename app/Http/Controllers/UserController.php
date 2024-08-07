@@ -10,8 +10,29 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Session;
+
 class UserController extends Controller
 {
+    public function token(Request $request){
+        // return $request->all();
+        $token = "";
+        $user = User::where('email', $request->email)->first();
+        if(!$user || !Hash::check($request->password, $user->password)){
+            return response()->json([
+                'message' => 'credenciales incorrectas',
+                'token' => $token]);
+        }
+        $tokens = $user->tokens()->first();
+        if(!$tokens){
+            $token_create = $user->createToken( $user->id )->plainTextToken;
+            $tokens        = $user->tokens()->first();
+            $token        = $tokens->token;
+        }else{
+            $token = $tokens->token;
+        }
+        return response()->json( [ 'user' => $user, 'token' => $token ]);
+    }
     public function existeNick(Request $request){
         $data = $request->all();
         $consult = User::where('nick', $data['nick'])->get();
@@ -42,7 +63,8 @@ class UserController extends Controller
     public function loginOnApi(StoreLoginRequest $request){
         try{
             // return $request->all();
-            $user = User::where('usernick', $request->usernick)->orWhere('email', $request->usernick)->first();
+            $user = User::where('usernick', $request->usernick)
+                    ->orWhere('email', $request->usernick)->first();
             if($user == null){
                 return response()->json([
                     "isRequest"=> true,

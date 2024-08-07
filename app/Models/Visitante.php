@@ -13,6 +13,8 @@ class Visitante extends Model
     protected $primaryKey = "id";
     protected $fillable = [
         'profile_photo_path',
+        'is_permitido',
+        'description_is_no_permitido',
         'perfil_id'
     ];
     public function perfil(): BelongsTo{
