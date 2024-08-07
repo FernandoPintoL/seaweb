@@ -20,5 +20,9 @@ class TipoVisitaSeeder extends Seeder
             'sigla' => "OTRO",
             'detalle' => "OTRO",
         ]);
+        TipoVisita::create([
+            'sigla' => "NO AUTORIZADO",
+            'detalle' => "NO AUTORIZADO",
+        ]);
     }
 }

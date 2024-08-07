@@ -40,12 +40,15 @@ Route::post('/apphabitante/querySearchWeb',[HabitanteController::class, 'querySe
 Route::apiResource('appvisitante', VisitanteController::class);
 Route::post('/appvisitante/query',[VisitanteController::class, 'query'])->name('appvisitante.query');
 Route::post('/appvisitante/queryId',[VisitanteController::class, 'queryId'])->name('appvisitante.queryId');
+Route::put('/appvisitante/ispermitido/{appvisitante}',[VisitanteController::class, 'updateIsPermitido'])->name('appvisitante.updateIsPermitido');
 /* VIVIENDAS RUTAS */
 Route::apiResource('appvivienda', ViviendaController::class);
 Route::post('/appvivienda/query',[ViviendaController::class, 'query'])->name('appvivienda.query');
 /* INGRESOS RUTAS */
 Route::apiResource('appingreso', IngresoController::class);
+Route::put('/appingreso/registerSalida/{appingreso}', [IngresoController::class, 'registerSalida'])->name('appingreso.registerSalida');
 Route::post('/appingreso/query',[IngresoController::class, 'query'])->name('appingreso.query');
+Route::post('/appingreso/queryDate',[IngresoController::class, 'queryDate'])->name('appingreso.queryDate');
 
 /** GALERIA DE VISITANTES **/
 Route::apiResource('appgaleriavisitante', GaleriaVisitanteController::class);
@@ -62,3 +65,4 @@ Route::post('/apptipovisita/query',[TipoVisitaController::class, 'query'])->name
 Route::apiResource('appvehiculo', VehiculoController::class);
 Route::post('/appvehiculo/query',[VehiculoController::class, 'query'])->name('appvehiculo.query');
 Route::post('/appvehiculo/queryId',[VehiculoController::class, 'queryId'])->name('appvehiculo.queryId');
+Route::post( '/token', [UserController::class, 'token'])->name('users.token');

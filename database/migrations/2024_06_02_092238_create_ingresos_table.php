@@ -24,6 +24,8 @@ return new class extends Migration
             $table->unsignedBigInteger('vehiculo_id')->nullable();
             $table->unsignedBigInteger('tipo_visita_id')->nullable(); 
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->dateTime('salida_created_at')->nullable();
+            $table->dateTime('salida_updated_at')->nullable();
             $table->timestamps();
             $table->foreign( 'visitante_id' )->references( 'id' )->on('visitantes')->noActionOnDelete()->noActionOnUpdate();
             $table->foreign( 'residente_habitante_id' )->references( 'id' )->on('habitantes')->noActionOnDelete()->noActionOnUpdate();
