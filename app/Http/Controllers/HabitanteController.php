@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Models\Habitante;
 use App\Models\Perfil;
 use App\Http\Requests\StoreHabitanteRequest;
@@ -33,9 +31,12 @@ class HabitanteController extends Controller
      */
     public function query(Request $request){
         try{
+
             $queryStr  = $request->get( 'query' );
             $queryUpper = strtoupper($queryStr);
-            $responsse = DB::table('habitantes as h')
+            $responsse  = [];
+            if($request->get('skip') == null && $request->get('take') == null){
+                $responsse = DB::table('habitantes as h')
                         ->select('h.id as id',
                                 'h.*',
                                 'p.id as id_perfil',
@@ -51,6 +52,28 @@ class HabitanteController extends Controller
                         ->orWhere('vd.nroVivienda','LIKE','%'.$queryUpper.'%')
                         ->orderBy('id', 'DESC')
                         ->get();
+            }else{
+                $skip = $request->get('skip');
+                $take = $request->get('take');
+                $responsse = DB::table('habitantes as h')
+                        ->select('h.id as id',
+                                'h.*',
+                                'p.id as id_perfil',
+                                'p.name',
+                                'p.nroDocumento',
+                                'p.celular',
+                                'vd.id as id_vivienda',
+                                'vd.nroVivienda')
+                        ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
+                        ->join('viviendas as vd', 'h.vivienda_id', '=', 'vd.id')
+                        ->where('p.nroDocumento','LIKE','%'.$queryUpper.'%')
+                        ->orWhere('p.name','LIKE','%'.$queryUpper.'%')
+                        ->orWhere('vd.nroVivienda','LIKE','%'.$queryUpper.'%')
+                        ->skip($skip)
+                        ->take($take)
+                        ->orderBy('id', 'DESC')
+                        ->get();
+            }
             $cantidad = count( $responsse );
             $str = strval($cantidad);
             return response()->json([
@@ -72,7 +95,7 @@ class HabitanteController extends Controller
             ]);
         }
     }
-    /* 
+    /*
     public function queryAutoriza(Request $request){
         try{
             $habitantes = Habitante::with('perfil')->with('responsable')->get();

@@ -15,7 +15,6 @@ class TipoVisitaController extends Controller
             $queryStr = $request->get('query');
             $responsse = TipoVisita::where('sigla','LIKE','%'.$queryStr.'%')
                         ->orWhere('detalle','LIKE','%'.$queryStr.'%')
-                        ->orderBy('id', 'DESC')
                         ->get();
             $cantidad = count( $responsse );
             $str = strval($cantidad);

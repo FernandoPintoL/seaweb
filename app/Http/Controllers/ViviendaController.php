@@ -15,11 +15,23 @@ class ViviendaController extends Controller
         try{
             $queryStr    = $request->get('query');
             $queryUpper = strtoupper($queryStr);
-            $responsse = Vivienda::where('nroVivienda','LIKE',"%".$queryUpper."%")
+            if($request->get('skip') == null && $request->get('take') == null){
+                $responsse = Vivienda::where('nroVivienda','LIKE',"%".$queryUpper."%")
                         ->with('tipoVivienda')
                         ->with('condominio')
                         ->orderBy('id', 'DESC')
                         ->get();
+            }else{
+                $skip = $request->get('skip');
+                $take = $request->get('take');
+                $responsse = Vivienda::where('nroVivienda','LIKE',"%".$queryUpper."%")
+                        ->with('tipoVivienda')
+                        ->with('condominio')
+                        ->skip($skip)
+                        ->take($take)
+                        ->orderBy('id', 'DESC')
+                        ->get();
+            }
             $cantidad = count( $responsse );
             $str = strval($cantidad);
             return response()->json([

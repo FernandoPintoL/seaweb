@@ -18,6 +18,7 @@ class VisitanteController extends Controller
         try{
             $queryStr    = $request->get('query');
             $queryUpper = strtoupper($queryStr);
+
             if($request->get('black_list')){
                 $responsse = DB::table('visitantes as v')
                         ->select('v.id as id','v.*','p.name','p.nroDocumento', 'p.celular')
@@ -26,13 +27,27 @@ class VisitanteController extends Controller
                         ->orderBy('v.id', 'DESC')
                         ->get();
             }else{
-                $responsse = DB::table('visitantes as v')
+                if($request->get('skip') == null && $request->get('take') == null){
+                    $responsse = DB::table('visitantes as v')
                         ->select('v.id as id','v.*','p.name','p.nroDocumento', 'p.celular')
                         ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
                         ->where('p.name','LIKE',"%".$queryUpper."%")
                         ->orWhere('p.nroDocumento','LIKE',"%".$queryUpper."%")
                         ->orderBy('v.id', 'DESC')
                         ->get();
+                }else{
+                    $skip = $request->get('skip');
+                    $take = $request->get('take');
+                    $responsse = DB::table('visitantes as v')
+                            ->select('v.id as id','v.*','p.name','p.nroDocumento', 'p.celular')
+                            ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
+                            ->where('p.name','LIKE',"%".$queryUpper."%")
+                            ->orWhere('p.nroDocumento','LIKE',"%".$queryUpper."%")
+                            ->skip($skip)
+                            ->take($take)
+                            ->orderBy('v.id', 'DESC')
+                            ->get();
+                }
             }
 
             $cantidad = count( $responsse );

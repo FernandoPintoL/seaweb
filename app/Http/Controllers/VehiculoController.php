@@ -16,7 +16,20 @@ class VehiculoController extends Controller
         try{
             $queryStr    = $request->get('query');
             $queryUpper = strtoupper($queryStr);
-            $responsse = Vehiculo::where('placa','LIKE',"%".$queryUpper."%")->orderBy('id', 'DESC')->get();
+            $responsse  = [];
+            if($request->get('skip') == null && $request->get('take') == null){
+                $responsse = Vehiculo::where('placa','LIKE',"%".$queryUpper."%")
+                            ->orderBy('id', 'DESC')
+                            ->get();
+            }else{
+                $skip = $request->get('skip');
+                $take = $request->get('take');
+                $responsse = Vehiculo::where('placa','LIKE',"%".$queryUpper."%")
+                            ->skip($skip)
+                            ->take($take)
+                            ->orderBy('id', 'DESC')
+                            ->get();
+            }
             $cantidad = count( $responsse );
             $str = strval($cantidad);
             return response()->json([
@@ -38,7 +51,7 @@ class VehiculoController extends Controller
             ]);
         }
     }
-    
+
     public function queryId(Request $request){
         try{
             $queryStr    = $request->get('query');
@@ -86,7 +99,7 @@ class VehiculoController extends Controller
     {
         try{
             $responsse = Vehiculo::create($request->all());
-            $responsse->update([                
+            $responsse->update([
                 'created_at' => $request->created_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->created_at,
                 'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
             ]);
