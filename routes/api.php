@@ -52,10 +52,12 @@ Route::post('/appingreso/queryDate',[IngresoController::class, 'queryDate'])->na
 
 /** GALERIA DE VISITANTES **/
 Route::apiResource('appgaleriavisitante', GaleriaVisitanteController::class);
+Route::post('/appgaleriavisitante/query', [GaleriaVisitanteController::class,'query'])->name('appgaleriavisitante.query');
 Route::post('/appgaleriavisitante/uploadimage', [GaleriaVisitanteController::class,'uploadimage'])->name('appgaleriavisitante.uploadimage');
 Route::post('/appgaleriavisitante/visitanteid',[GaleriaVisitanteController::class, 'getGaleriaVisitante'])->name('appgaleriavisitante.visitanteid');
 /** GALERIA DE VEHICULOS **/
 Route::apiResource('appgaleriavehiculo', GaleriaVehiculoController::class);
+Route::post('/appgaleriavehiculo/query', [GaleriaVehiculoController::class,'query'])->name('appgaleriavehiculo.query');
 Route::post('/appgaleriavehiculo/uploadimage', [GaleriaVehiculoController::class,'uploadimage'])->name('appgaleriavehiculo.uploadimage');
 Route::post('/appgaleriavehiculo/vehiculoid',[GaleriaVehiculoController::class, 'getGaleriaVehiculo'])->name('appgaleriavehiculo.vehiculoid');
 /* TIPOVISITA RUTAS */

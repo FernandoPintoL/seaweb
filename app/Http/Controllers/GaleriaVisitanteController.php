@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateGaleriaVisitanteRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Http\File;
+use Illuminate\Support\Facades\DB;
 
 class GaleriaVisitanteController extends Controller
 {
@@ -98,14 +99,39 @@ class GaleriaVisitanteController extends Controller
 
     public function query(Request $request){
         try{
-            $responsse = GaleriaVisitante::with('visitante')
-                        ->orderBy('id', 'DESC')
-                         ->get();
+            $queryStr    = $request->get('query');
+            $queryUpper = strtoupper($queryStr);
+            $responsse  = [];
+            if($request->get('skip') == null && $request->get('take') == null){
+                $responsse = DB::table('galeria_visitantes as gv')
+                            ->select('gv.id as id','gv.*','v.id as v_id','v.*','p.name','p.nroDocumento', 'p.celular')
+                            ->join('visitantes as v', 'v.id', '=', 'gv.visitante_id')
+                            ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
+                            ->where('p.name','LIKE',"%".$queryUpper."%")
+                            ->orWhere('p.nroDocumento','LIKE',"%".$queryUpper."%")
+                            ->orderBy('gv.id', 'DESC')
+                            ->get();
+            }else{
+                $skip = $request->get('skip');
+                $take = $request->get('take');
+                $responsse = DB::table('galeria_visitantes as gv')
+                            ->select('gv.id as id','gv.*','v.id as v_id','v.*','p.name','p.nroDocumento', 'p.celular')
+                            ->join('visitantes as v', 'v.id', '=', 'gv.visitante_id')
+                            ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
+                            ->where('p.name','LIKE',"%".$queryUpper."%")
+                            ->orWhere('p.nroDocumento','LIKE',"%".$queryUpper."%")
+                            ->skip($skip)
+                            ->take($take)
+                            ->orderBy('gv.id', 'DESC')
+                            ->get();
+            }
+            $cantidad = count( $responsse );
+            $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
                 "success" => true,
                 "messageError" => false,
-                "message" => "Consulta de galeria visitantes conrrectamente..",
+                "message" => "$str datos encontrados",
                 "data" => $responsse
             ]);
         }catch(\Exception $e){

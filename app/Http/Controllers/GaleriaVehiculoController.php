@@ -7,6 +7,7 @@ use App\Http\Requests\StoreGaleriaVehiculoRequest;
 use App\Http\Requests\UpdateGaleriaVehiculoRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class GaleriaVehiculoController extends Controller
 {
@@ -93,8 +94,28 @@ class GaleriaVehiculoController extends Controller
 
     public function query(Request $request){
         try{
-            $responsse = GaleriaVehiculo::with('vehiculo')
-                         ->get();
+            $queryStr    = $request->get('query');
+            $queryUpper = strtoupper($queryStr);
+            $responsse  = [];
+            if($request->get('skip') == null && $request->get('take') == null){
+                $responsse = DB::table('galeria_vehiculos as gvh')
+                            ->select('gvh.id as id','gvh.*','vh.id as v_id', 'vh.placa','vh.tipo_vehiculo', 'vh.visitante_id')
+                            ->join('vehiculos as vh', 'vh.id', '=', 'gvh.vehiculo_id')
+                            ->where('vh.placa','LIKE',"%".$queryUpper."%")
+                            ->orderBy('gvh.id', 'DESC')
+                            ->get();
+            }else{
+                $skip = $request->get('skip');
+                $take = $request->get('take');
+                $responsse = DB::table('galeria_vehiculos as gvh')
+                            ->select('gvh.id as id','gvh.*','vh.id as v_id', 'vh.placa','vh.tipo_vehiculo', 'vh.visitante_id')
+                            ->join('vehiculos as vh', 'vh.id', '=', 'gvh.vehiculo_id')
+                            ->where('vh.placa','LIKE',"%".$queryUpper."%")
+                            ->skip($skip)
+                            ->take($take)
+                            ->orderBy('gv.id', 'DESC')
+                            ->get();
+            }
             $cantidad = count( $responsse );
             $str = strval($cantidad);
             return response()->json([
