@@ -40,7 +40,7 @@ const onSearchQuery = (e) => {
   queryList(e.target.value)
 }
 
-const onSearchDate = () => {
+/*const onSearchDate = () => {
   console.log(datas.dateStart)
   console.log(datas.dateEnd)
   if (datas.dateStart.length > 0 && datas.dateEnd.length > 0) {
@@ -52,7 +52,7 @@ const onSearchDate = () => {
   } else {
     queryList('')
   }
-}
+}*/
 
 const queryDateList = async (date_start, date_end) => {
   datas.isLoad = true
@@ -64,7 +64,7 @@ const queryDateList = async (date_start, date_end) => {
     .post(url)
     .then((response) => {
       console.log(response.data)
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         datas.list = response.data.data
         datas.messageList = response.data.message
         datas.metodoList =
@@ -85,12 +85,14 @@ const queryDateList = async (date_start, date_end) => {
 
 const queryList = async (consulta) => {
   datas.isLoad = true
-  const url = route('condominio.query', { query: consulta.toUpperCase() })
+  const url = route('condominio.query', {
+    query: consulta.toUpperCase(),
+  })
   await axios
     .post(url)
     .then((response) => {
       console.log(response.data)
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         datas.list = response.data.data
         datas.messageList = response.data.message
         datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
@@ -110,7 +112,7 @@ const fecha = (fechaData) => {
   return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM a')
 }
 
-const destroyData = async (id) => {
+/*const destroyData = async (id) => {
   const url = route('ingreso.destroy', id)
   await axios
     .delete(url)
@@ -138,7 +140,7 @@ const destroyData = async (id) => {
       }
     })
   queryList('')
-}
+}*/
 </script>
 
 <template>
@@ -226,116 +228,120 @@ const destroyData = async (id) => {
     <div class="flex flex-col">
       <div class="-m-1.5 overflow-x-auto">
         <div class="p-1.5 min-w-full inline-block align-middle">
-          <div v-show="datas.isLoad">
+          <div v-if="datas.isLoad">
             <Loader />
           </div>
-          <div
-            v-if="datas.list.length > 0"
-            class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
-          >
-            <!-- Table -->
-            <TableGrl>
-              <template #tbl-header>
-                <tr>
-                  <th scope="col" class="px-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        ID
-                      </span>
-                    </div>
-                  </th>
+          <div v-else>
+            <div
+              v-if="datas.list.length > 0"
+              class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
+            >
+              <!-- Table -->
+              <TableGrl>
+                <template #tbl-header>
+                  <tr>
+                    <th scope="col" class="px-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          ID
+                        </span>
+                      </div>
+                    </th>
 
-                  <th scope="col" class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        PROPIETARIO
-                      </span>
-                    </div>
-                  </th>
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          PROPIETARIO
+                        </span>
+                      </div>
+                    </th>
 
-                  <th scope="col" class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        Creado
-                      </span>
-                    </div>
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        _
-                      </span>
-                    </div>
-                  </th>
-                </tr>
-              </template>
-              <template #tbl-body>
-                <tr v-for="item in datas.list" :key="item.id">
-                  <td class="h-px w-72 whitespace-nowrap">
-                    <div class="px-6 py-3">
-                      <span
-                        class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                      >
-                        #{{ item.id }}
-                      </span>
-                      <span
-                        class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                      >
-                        NIT: {{ item.nit == null ? '' : item.nit }}
-                      </span>
-                    </div>
-                  </td>
-                  <td class="h-px w-72 whitespace-nowrap">
-                    <div class="px-6 py-3">
-                      <span
-                        class="block text-sm text-gray-500 dark:text-neutral-500"
-                      >
-                        {{ item.propietario == null ? '' : item.propietario }}
-                      </span>
-                      <span
-                        class="block text-sm text-gray-500 dark:text-neutral-500"
-                      >
-                        Razon Social:
-                        {{ item.razonSocial == null ? '' : item.razonSocial }}
-                      </span>
-                    </div>
-                  </td>
-                  <td class="h-px w-72 whitespace-nowrap">
-                    <div class="px-6 py-3">
-                      <span
-                        class="block text-sm text-gray-500 dark:text-neutral-500"
-                      >
-                        {{
-                          item.created_at == null ? '' : fecha(item.created_at)
-                        }}
-                      </span>
-                    </div>
-                  </td>
-                  <td class="h-px w-72 whitespace-nowrap">
-                    <div class="px-6 py-3">
-                      <Link
-                        :href="route('condominio.edit', item.id)"
-                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                      >
-                        Editar
-                        <i class="fa-solid fa-pencil"></i>
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              </template>
-            </TableGrl>
-            <!-- End Table -->
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          Creado
+                        </span>
+                      </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          _
+                        </span>
+                      </div>
+                    </th>
+                  </tr>
+                </template>
+                <template #tbl-body>
+                  <tr v-for="item in datas.list" :key="item.id">
+                    <td class="h-px w-72 whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span
+                          class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
+                        >
+                          #{{ item.id }}
+                        </span>
+                        <span
+                          class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
+                        >
+                          NIT: {{ item.nit == null ? '' : item.nit }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="h-px w-72 whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span
+                          class="block text-sm text-gray-500 dark:text-neutral-500"
+                        >
+                          {{ item.propietario == null ? '' : item.propietario }}
+                        </span>
+                        <span
+                          class="block text-sm text-gray-500 dark:text-neutral-500"
+                        >
+                          Razon Social:
+                          {{ item.razonSocial == null ? '' : item.razonSocial }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="h-px w-72 whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span
+                          class="block text-sm text-gray-500 dark:text-neutral-500"
+                        >
+                          {{
+                            item.created_at == null
+                              ? ''
+                              : fecha(item.created_at)
+                          }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="h-px w-72 whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <Link
+                          :href="route('condominio.edit', item.id)"
+                          class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                        >
+                          Editar
+                          <i class="fa-solid fa-pencil"></i>
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </TableGrl>
+              <!-- End Table -->
+            </div>
+            <Alert v-else :message="datas.messageList"></Alert>
           </div>
-          <Alert v-else :message="'Lista Vacia'"></Alert>
         </div>
       </div>
     </div>

@@ -62,7 +62,7 @@ const queryDateList = async (date_start, date_end) => {
     .post(url)
     .then((response) => {
       console.log(response.data)
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         datas.list = response.data.data
         datas.messageList = response.data.message
         datas.metodoList =
@@ -87,7 +87,7 @@ const queryList = async (consulta) => {
   await axios
     .post(url)
     .then((response) => {
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         datas.list = response.data.data
         datas.messageList = response.data.message
         datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
@@ -112,24 +112,24 @@ const destroyData = async (id) => {
     .delete(url)
     .then((response) => {
       Swal.fire({
-        title: response.data.success ? 'Buen Trabajo!' : 'Error!',
-        text: response.data.success
+        title: response.data.isSuccess ? 'Buen Trabajo!' : 'Error!',
+        text: response.data.isSuccess
           ? 'Dato creado exitosamente'
           : 'Algún error inesperado',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
       })
     })
     .catch((error) => {
-      if (error.messageError) {
+      if (error.isMessageError) {
         console.log(error.message)
         Swal.fire({
-          title: error.messageError
+          title: error.isMessageError
             ? 'Error desde el micro servicio!'
             : 'Algun otro error esta sucediendo!',
-          text: error.messageError
+          text: error.isMessageError
             ? 'Algunos datos fueron mal registrados'
             : 'Algun otro tipo de error sucedio',
-          icon: error.messageError ? 'error' : 'success',
+          icon: error.isMessageError ? 'error' : 'success',
         })
       }
     })
@@ -222,187 +222,192 @@ const destroyData = async (id) => {
     <div class="flex flex-col">
       <div class="-m-1.5 overflow-x-auto">
         <div class="p-1.5 min-w-full inline-block align-middle">
-          <div v-show="datas.isLoad">
+          <div v-if="datas.isLoad">
             <Loader />
           </div>
-          <div
-            v-if="datas.list.length > 0"
-            class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
-          >
-            <!-- Table -->
-            <TableGrl>
-              <template #tbl-header>
-                <tr>
-                  <th scope="col" class="px-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        ID
-                      </span>
-                    </div>
-                  </th>
-
-                  <th class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        NRO VIVIENDA
-                      </span>
-                    </div>
-                  </th>
-                  <th class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        TIPO DE VIVIENDA
-                      </span>
-                    </div>
-                  </th>
-                  <th class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        CONDOMINIO
-                      </span>
-                    </div>
-                  </th>
-                  <th class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        VIVIENDA OCUPADA
-                      </span>
-                    </div>
-                  </th>
-                  <th class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        DETALLE
-                      </span>
-                    </div>
-                  </th>
-                  <th class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        CREADO
-                      </span>
-                    </div>
-                  </th>
-                  <th class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        _
-                      </span>
-                    </div>
-                  </th>
-                </tr>
-              </template>
-              <template #tbl-body>
-                <tr v-for="item in datas.list" :key="item.id">
-                  <td
-                    class="px-3 py-3 text-gray-900 whitespace-nowrap dark:text-white"
-                  >
-                    {{ item.id }}
-                  </td>
-                  <td
-                    class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                  >
-                    <span>
-                      {{ item.nroVivienda == null ? '' : item.nroVivienda }}
-                    </span>
-                  </td>
-                  <td
-                    class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                  >
-                    {{
-                      item.tipo_vivienda.detalle == null
-                        ? ''
-                        : item.tipo_vivienda.detalle
-                    }}
-                  </td>
-                  <td
-                    class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                  >
-                    {{
-                      item.condominio.razonSocial == null
-                        ? ''
-                        : item.condominio.razonSocial
-                    }}
-                  </td>
-                  <td
-                    class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                  >
-                    <!-- {{ item.vivienda_ocupada ? 'Ocupada' : 'No Ocupada' }} -->
-                    <div class="grow">
-                      <p class="py-1" v-if="item.vivienda_ocupada != null">
+          <div v-else>
+            <div
+              v-if="datas.list.length > 0"
+              class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
+            >
+              <!-- Table -->
+              <TableGrl>
+                <template #tbl-header>
+                  <tr>
+                    <th scope="col" class="px-3 text-start">
+                      <div class="flex items-center gap-x-2">
                         <span
-                          :class="
-                            item.vivienda_ocupada
-                              ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
-                              : 'text-red-800 bg-red-100 dark:text-red-500'
-                          "
-                          class="px-2 py-1 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
                         >
-                          {{ item.vivienda_ocupada ? 'OCUPADA' : 'NO OCUPADA' }}
-                          <i
+                          ID
+                        </span>
+                      </div>
+                    </th>
+
+                    <th class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          NRO VIVIENDA
+                        </span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          TIPO DE VIVIENDA
+                        </span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          CONDOMINIO
+                        </span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          VIVIENDA OCUPADA
+                        </span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          DETALLE
+                        </span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          CREADO
+                        </span>
+                      </div>
+                    </th>
+                    <th class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          _
+                        </span>
+                      </div>
+                    </th>
+                  </tr>
+                </template>
+                <template #tbl-body>
+                  <tr v-for="item in datas.list" :key="item.id">
+                    <td
+                      class="px-3 py-3 text-gray-900 whitespace-nowrap dark:text-white"
+                    >
+                      {{ item.id }}
+                    </td>
+                    <td
+                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
+                    >
+                      <span>
+                        {{ item.nroVivienda == null ? '' : item.nroVivienda }}
+                      </span>
+                    </td>
+                    <td
+                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
+                    >
+                      {{
+                        item.tipo_vivienda.detalle == null
+                          ? ''
+                          : item.tipo_vivienda.detalle
+                      }}
+                    </td>
+                    <td
+                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
+                    >
+                      {{
+                        item.condominio.razonSocial == null
+                          ? ''
+                          : item.condominio.razonSocial
+                      }}
+                    </td>
+                    <td
+                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
+                    >
+                      <!-- {{ item.vivienda_ocupada ? 'Ocupada' : 'No Ocupada' }} -->
+                      <div class="grow">
+                        <p class="py-1" v-if="item.vivienda_ocupada != null">
+                          <span
                             :class="
                               item.vivienda_ocupada
-                                ? 'fa-solid fa-check'
-                                : 'fa-solid fa-circle-exclamation'
+                                ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
+                                : 'text-red-800 bg-red-100 dark:text-red-500'
                             "
-                          ></i>
-                        </span>
-                      </p>
-                    </div>
-                  </td>
-                  <td
-                    class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                  >
-                    {{
-                      item.condominio.detalle == null
-                        ? ''
-                        : item.condominio.detalle
-                    }}
-                  </td>
-                  <td
-                    class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                  >
-                    {{ item.created_at != null ? fecha(item.created_at) : '' }}
-                  </td>
-                  <!-- <td class="px-6 py-4">
+                            class="px-2 py-1 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
+                          >
+                            {{
+                              item.vivienda_ocupada ? 'OCUPADA' : 'NO OCUPADA'
+                            }}
+                            <i
+                              :class="
+                                item.vivienda_ocupada
+                                  ? 'fa-solid fa-check'
+                                  : 'fa-solid fa-circle-exclamation'
+                              "
+                            ></i>
+                          </span>
+                        </p>
+                      </div>
+                    </td>
+                    <td
+                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
+                    >
+                      {{
+                        item.condominio.detalle == null
+                          ? ''
+                          : item.condominio.detalle
+                      }}
+                    </td>
+                    <td
+                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
+                    >
+                      {{
+                        item.created_at != null ? fecha(item.created_at) : ''
+                      }}
+                    </td>
+                    <!-- <td class="px-6 py-4">
                 {{
                   tipodocumento.updated_at != null
                     ? fecha(tipodocumento.updated_at)
                     : ''
                 }}
               </td> -->
-                  <td class="px-3 py-3">
-                    <Link
-                      :href="route('vivienda.edit', item.id)"
-                      class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                    >
-                      Editar
-                      <i class="fa-solid fa-pencil"></i>
-                    </Link>
-                    <!-- <button
+                    <td class="px-3 py-3">
+                      <Link
+                        :href="route('vivienda.edit', item.id)"
+                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                      >
+                        Editar
+                        <i class="fa-solid fa-pencil"></i>
+                      </Link>
+                      <!-- <button
                   type="submit"
                   class="font-medium text-red-600 dark:text-red-500 hover:underline"
                 >
                   Delete
                 </button> -->
-                    <!-- <input type="hidden" name="_method" value="DELETE" /> -->
-                    <!-- <form @submit.prevent="destroyData(tipodocumento.id)">
+                      <!-- <input type="hidden" name="_method" value="DELETE" /> -->
+                      <!-- <form @submit.prevent="destroyData(tipodocumento.id)">
                   <button
                     type="submit"
                     class="font-medium text-red-600 dark:text-red-500 hover:underline"
@@ -410,22 +415,13 @@ const destroyData = async (id) => {
                     Delete
                   </button>
                 </form> -->
-                  </td>
-                </tr>
-              </template>
-            </TableGrl>
-            <!-- End Table -->
-          </div>
-          <div
-            v-else
-            class="mt-2 bg-blue-600 text-sm text-white rounded-lg p-4 dark:bg-blue-500"
-            role="alert"
-            tabindex="-1"
-            aria-labelledby="hs-solid-color-info-label"
-          >
-            <span id="hs-solid-color-info-label" class="font-bold">
-              Lista vacía
-            </span>
+                    </td>
+                  </tr>
+                </template>
+              </TableGrl>
+              <!-- End Table -->
+            </div>
+            <Alert v-else :message="datas.messageList"></Alert>
           </div>
         </div>
       </div>

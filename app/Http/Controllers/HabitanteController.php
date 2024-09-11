@@ -18,10 +18,12 @@ class HabitanteController extends Controller
         if ($validator->fails()) {
             return response()->json( [
                 "isRequest" => true,
-                "success" => false,
-                "messageError" => true,
+                "isSuccess" => false,
+                "isMessageError" => true,
                 "message" => $validator->errors(),
-                "data" => []
+                "messageError" => $validator->errors(),
+                "data" => [],
+                "statusCode" => 422
             ], 422 );
         }
     }
@@ -78,52 +80,36 @@ class HabitanteController extends Controller
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "$str datos encontrados",
-                "data" => $responsse
+                "messageError" => "$str datos encontrados",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Consulta habitante/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
-    /*
-    public function queryAutoriza(Request $request){
-        try{
-            $habitantes = Habitante::with('perfil')->with('responsable')->get();
-            return response()->json([
-                "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
-                "message" => "Session cerrada conrrectamente..",
-                "data" => $habitantes
-            ]);
-        }catch(\Exception $e){
-            $message = $e->getMessage();
-            $code = $e->getCode();
-            return response()->json([
-                "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
-            ]);
-        }
-    } */
+
     public function index()
     {
         $responsse = DB::table('habitantes as h')
                         ->select('h.id as id','h.*','p.id as id_perfil','p.name','p.nroDocumento','vd.id as id_vivienda','vd.nroVivienda')
                         ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
                         ->join('viviendas as vd', 'h.vivienda_id', '=', 'vd.id')
+                        ->skip(0)
+                        ->take(20)
                         ->get();
         return Inertia::render("Habitante/Index", ['listado'=> $responsse]);
     }
@@ -150,10 +136,12 @@ class HabitanteController extends Controller
                     if ($validator->fails()) {
                         return response()->json( [
                             "isRequest" => true,
-                            "success" => false,
-                            "messageError" => true,
+                            "isSuccess" => false,
+                            "isMessageError" => true,
                             "message" => $validator->errors(),
-                            "data" => []
+                            "messageError" => $validator->errors(),
+                            "data" => [],
+                            "statusCode" => 422
                         ], 422 );
                     }
                 }
@@ -165,10 +153,12 @@ class HabitanteController extends Controller
                     if ($validator->fails()) {
                         return response()->json( [
                             "isRequest" => true,
-                            "success" => false,
-                            "messageError" => true,
+                            "isSuccess" => false,
+                            "isMessageError" => true,
                             "message" => $validator->errors(),
-                            "data" => []
+                            "messageError" => $validator->errors(),
+                            "data" => [],
+                            "statusCode" => 422
                         ], 422 );
                     }
                 }
@@ -189,20 +179,24 @@ class HabitanteController extends Controller
             ]);
             return response()->json([
                 "isRequest"=> true,
-                "success" => $responsse != null,
-                "messageError" => $responsse != null,
+                "isSuccess" => $responsse != null,
+                "isMessageError" => $responsse != null,
                 "message" => $responsse != null ? "Registro completo" : "Error!!!",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -222,20 +216,24 @@ class HabitanteController extends Controller
             // $perfil    = Perfil::findOrFail( $habitante->perfil_id );
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "Consulta Habitante realizada correctamente...",
-                "data" => $habitante->perfil
+                "messageError" => "",
+                "data" => $habitante->perfil,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -252,20 +250,24 @@ class HabitanteController extends Controller
                         ->first();
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "Consulta Residente realizada correctamente...",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -297,10 +299,12 @@ class HabitanteController extends Controller
                     if ($validator->fails()) {
                         return response()->json( [
                             "isRequest" => true,
-                            "success" => false,
-                            "messageError" => true,
+                            "isSuccess" => false,
+                            "isMessageError" => true,
                             "message" => $validator->errors(),
-                            "data" => []
+                            "messageError" => $validator->errors(),
+                            "data" => [],
+                            "statusCode" => 422
                         ], 422 );
                     }
                 }
@@ -312,10 +316,12 @@ class HabitanteController extends Controller
                     if ($validator->fails()) {
                         return response()->json( [
                             "isRequest" => true,
-                            "success" => false,
-                            "messageError" => true,
+                            "isSuccess" => false,
+                            "isMessageError" => true,
                             "message" => $validator->errors(),
-                            "data" => []
+                            "messageError" => $validator->errors(),
+                            "data" => [],
+                            "statusCode" => 422
                         ], 422 );
                     }
                 }
@@ -333,20 +339,24 @@ class HabitanteController extends Controller
             ]);
             return response()->json([
                 "isRequest"=> true,
-                "success" => $responsse != null,
-                "messageError" => $responsse != null,
+                "isSuccess" => $responsse != null,
+                "isMessageError" => $responsse != null,
                 "message" => $responsse != null ? "Actualización completo" : "Error!!!",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -370,30 +380,25 @@ class HabitanteController extends Controller
             $response = $habitante->delete();
             return response()->json([
                 "isRequest"=> true,
-                "success" => $response,
-                "messageError" => $response,
+                "isSuccess" => $response,
+                "isMessageError" => $response,
                 "message" => $response != null ? "completo" : "Error!!!",
-                "data" => $response
+                "messageError" => "",
+                "data" => $response,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
 }
-
-
-/* return response()->json([
-    "isRequest"=> true,
-    "success" => false,
-    "messageError" => true,
-    "message" => "Verificacion",
-    "data" => $apphabitante
-]);  */

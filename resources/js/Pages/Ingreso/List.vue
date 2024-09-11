@@ -61,7 +61,7 @@ const queryDateList = async (date_start, date_end) => {
     .post(url)
     .then((response) => {
       console.log(response.data)
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         datas.list = response.data.data
         datas.messageList = response.data.message
         datas.metodoList =
@@ -82,12 +82,14 @@ const queryDateList = async (date_start, date_end) => {
 
 const queryList = async (consulta) => {
   datas.isLoad = true
-  const url = route('ingreso.query', { query: consulta.toUpperCase() })
+  const url = route('ingreso.query', {
+    query: consulta.toUpperCase(),
+  })
   await axios
     .post(url)
     .then((response) => {
       console.log(response.data)
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         datas.list = response.data.data
         datas.messageList = response.data.message
         datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
@@ -113,24 +115,24 @@ const destroyData = async (id) => {
     .delete(url)
     .then((response) => {
       Swal.fire({
-        title: response.data.success ? 'Buen Trabajo!' : 'Error!',
-        text: response.data.success
+        title: response.data.isSuccess ? 'Buen Trabajo!' : 'Error!',
+        text: response.data.isSuccess
           ? 'Dato creado exitosamente'
           : 'Algún error inesperado',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
       })
     })
     .catch((error) => {
-      if (error.messageError) {
+      if (error.isMessageError) {
         console.log(error.message)
         Swal.fire({
-          title: error.messageError
+          title: error.isMessageError
             ? 'Error desde el micro servicio!'
             : 'Algun otro error esta sucediendo!',
-          text: error.messageError
+          text: error.isMessageError
             ? 'Algunos datos fueron mal registrados'
             : 'Algun otro tipo de error sucedio',
-          icon: error.messageError ? 'error' : 'success',
+          icon: error.isMessageError ? 'error' : 'success',
         })
       }
     })
@@ -258,217 +260,219 @@ const destroyData = async (id) => {
   <div class="flex flex-col">
     <div class="-m-1.5 overflow-x-auto">
       <div class="p-1.5 min-w-full inline-block align-middle">
-        <div v-show="datas.isLoad">
+        <div v-if="datas.isLoad">
           <Loader />
         </div>
-        <div
-          v-if="datas.list.length > 0"
-          class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
-        >
-          <!-- Table -->
-          <TableGrl>
-            <template #tbl-header>
-              <tr>
-                <th scope="col" class="px-3 text-start">
-                  <div class="flex items-center gap-x-2">
-                    <span
-                      class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                    >
-                      ID
-                    </span>
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  class="px-6 py-3 text-start text-xs font-semibold text-gray-800 uppercase dark:text-neutral-500"
-                >
-                  <div class="flex items-center gap-x-2">
-                    <span
-                      class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                    >
-                      RESIDENTE
-                    </span>
-                  </div>
-                </th>
-
-                <th scope="col" class="px-6 py-3 text-start">
-                  <div class="flex items-center gap-x-2">
-                    <span
-                      class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                    >
-                      VISITANTE
-                    </span>
-                  </div>
-                </th>
-              </tr>
-            </template>
-
-            <template #tbl-body>
-              <tr v-for="item in datas.list" :key="item.id">
-                <td class="h-px w-72 whitespace-nowrap">
-                  <div class="px-3 py-1">
-                    <div class="flex items-center gap-x-3">
-                      <div
-                        class="relative w-2 h-2 bg-blue-200 rounded-full flex justify-center items-center text-center p-5 shadow-xl"
+        <div v-else>
+          <div
+            v-if="datas.list.length > 0"
+            class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
+          >
+            <!-- Table -->
+            <TableGrl>
+              <template #tbl-header>
+                <tr>
+                  <th scope="col" class="px-3 text-start">
+                    <div class="flex items-center gap-x-2">
+                      <span
+                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
                       >
-                        <span
-                          class="absolute text-3xl left-0 top-0 text-blue-800"
+                        ID
+                      </span>
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    class="px-6 py-3 text-start text-xs font-semibold text-gray-800 uppercase dark:text-neutral-500"
+                  >
+                    <div class="flex items-center gap-x-2">
+                      <span
+                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                      >
+                        RESIDENTE
+                      </span>
+                    </div>
+                  </th>
+
+                  <th scope="col" class="px-6 py-3 text-start">
+                    <div class="flex items-center gap-x-2">
+                      <span
+                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                      >
+                        VISITANTE
+                      </span>
+                    </div>
+                  </th>
+                </tr>
+              </template>
+
+              <template #tbl-body>
+                <tr v-for="item in datas.list" :key="item.id">
+                  <td class="h-px w-72 whitespace-nowrap">
+                    <div class="px-3 py-1">
+                      <div class="flex items-center gap-x-3">
+                        <div
+                          class="relative w-2 h-2 bg-blue-200 rounded-full flex justify-center items-center text-center p-5 shadow-xl"
                         >
-                          "
-                        </span>
-                        <span>{{ item.id }}</span>
-                      </div>
-                      <div class="grow">
-                        <p class="py-1">
                           <span
-                            v-if="item.vehiculo_id != null"
-                            :class="
-                              item.vehiculo_id != null
-                                ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
-                                : 'text-red-800 bg-red-100 dark:text-red-500'
-                            "
-                            class="px-2 py-1 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
+                            class="absolute text-3xl left-0 top-0 text-blue-800"
                           >
-                            {{
-                              item.vehiculo_id != null
-                                ? 'INGRESO CON VEHICULO'
-                                : 'INGRESO SIN VEHICULO'
-                            }}
-                            <i
+                            "
+                          </span>
+                          <span>{{ item.id }}</span>
+                        </div>
+                        <div class="grow">
+                          <p class="py-1">
+                            <span
+                              v-if="item.vehiculo_id != null"
                               :class="
                                 item.vehiculo_id != null
-                                  ? 'fa-solid fa-car'
-                                  : 'fa-solid fa-person-walking'
+                                  ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
+                                  : 'text-red-800 bg-red-100 dark:text-red-500'
                               "
-                            ></i>
-                          </span>
-                        </p>
-                        <p class="py-1">
-                          <span
-                            :class="
-                              item.isAutorizado
-                                ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
-                                : 'text-red-800 bg-red-100 dark:text-red-500'
-                            "
-                            class="py-1 px-2 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
-                          >
-                            <svg
-                              class="size-2.5"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              fill="currentColor"
-                              viewBox="0 0 16 16"
+                              class="px-2 py-1 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
                             >
-                              <path
-                                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                              />
-                            </svg>
+                              {{
+                                item.vehiculo_id != null
+                                  ? 'INGRESO CON VEHICULO'
+                                  : 'INGRESO SIN VEHICULO'
+                              }}
+                              <i
+                                :class="
+                                  item.vehiculo_id != null
+                                    ? 'fa-solid fa-car'
+                                    : 'fa-solid fa-person-walking'
+                                "
+                              ></i>
+                            </span>
+                          </p>
+                          <p class="py-1">
+                            <span
+                              :class="
+                                item.isAutorizado
+                                  ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
+                                  : 'text-red-800 bg-red-100 dark:text-red-500'
+                              "
+                              class="py-1 px-2 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
+                            >
+                              <svg
+                                class="size-2.5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                fill="currentColor"
+                                viewBox="0 0 16 16"
+                              >
+                                <path
+                                  d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
+                                />
+                              </svg>
+                              {{
+                                item.isAutorizado
+                                  ? 'INGRESO AUTORIZADO'
+                                  : 'INGRESO NO AUTORIZADO'
+                              }}
+                            </span>
+                          </p>
+                          <span
+                            class="block text-sm text-gray-900 dark:text-neutral-500"
+                          >
+                            Registrado:
+                            {{ item.created_at != null ? item.created_at : '' }}
+                          </span>
+                          <p
+                            class="block text-sm text-gray-500 dark:text-neutral-500"
+                          >
+                            Detalle Registro:
+                            {{ item.detalle != null ? item.detalle : '' }}
+                          </p>
+                          <span
+                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
+                          >
                             {{
-                              item.isAutorizado
-                                ? 'INGRESO AUTORIZADO'
-                                : 'INGRESO NO AUTORIZADO'
+                              item.salida_created_at != null
+                                ? 'SALIDA REGISTRADA: ' +
+                                  fecha(item.salida_created_at)
+                                : 'SIN REGISTRO DE SALIDA'
                             }}
                           </span>
-                        </p>
-                        <span
-                          class="block text-sm text-gray-900 dark:text-neutral-500"
-                        >
-                          Registrado:
-                          {{ item.created_at != null ? item.created_at : '' }}
-                        </span>
-                        <p
-                          class="block text-sm text-gray-500 dark:text-neutral-500"
-                        >
-                          Detalle Registro:
-                          {{ item.detalle != null ? item.detalle : '' }}
-                        </p>
-                        <span
-                          class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                        >
-                          {{
-                            item.salida_created_at != null
-                              ? 'SALIDA REGISTRADA: ' +
-                                fecha(item.salida_created_at)
-                              : 'SIN REGISTRO DE SALIDA'
-                          }}
-                        </span>
-                        <p
-                          class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                        >
-                          Detalle Salida:
-                          {{
-                            item.detalle_salida != null
-                              ? item.detalle_salida
-                              : ''
-                          }}
-                        </p>
-                        <div class="py-1.5">
-                          <a
-                            class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium dark:text-blue-500"
-                            :href="route('ingreso.edit', item.id)"
+                          <p
+                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
                           >
-                            Editar
-                            <i class="fa-solid fa-pencil"></i>
-                          </a>
+                            Detalle Salida:
+                            {{
+                              item.detalle_salida != null
+                                ? item.detalle_salida
+                                : ''
+                            }}
+                          </p>
+                          <div class="py-1.5">
+                            <a
+                              class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium dark:text-blue-500"
+                              :href="route('ingreso.edit', item.id)"
+                            >
+                              Editar
+                              <i class="fa-solid fa-pencil"></i>
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span
-                      class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                    >
-                      {{
-                        item.name_residente == null
-                          ? ''
-                          : item.name_residente.toUpperCase()
-                      }}
-                    </span>
-                    <span
-                      v-if="item.nroDocumento_residente != null"
-                      class="block text-sm text-gray-500 dark:text-neutral-500"
-                    >
-                      Nro Doc:
-                      {{
-                        item.nroDocumento_residente == null
-                          ? ''
-                          : item.nroDocumento_residente
-                      }}
-                    </span>
-                  </div>
-                </td>
-                <td class="size-px whitespace-nowrap">
-                  <div class="px-6 py-3">
-                    <span
-                      class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                    >
-                      {{
-                        item.name_visitante == null
-                          ? ''
-                          : item.name_visitante.toUpperCase()
-                      }}
-                    </span>
-                    <span
-                      class="block text-sm text-gray-500 dark:text-neutral-500"
-                    >
-                      Nro Doc:
-                      {{
-                        item.nroDocumento_visitante == null
-                          ? ''
-                          : item.nroDocumento_visitante
-                      }}
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            </template>
-          </TableGrl>
-          <!-- END TABLE -->
+                  </td>
+                  <td class="size-px whitespace-nowrap">
+                    <div class="px-6 py-3">
+                      <span
+                        class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
+                      >
+                        {{
+                          item.name_residente == null
+                            ? ''
+                            : item.name_residente.toUpperCase()
+                        }}
+                      </span>
+                      <span
+                        v-if="item.nroDocumento_residente != null"
+                        class="block text-sm text-gray-500 dark:text-neutral-500"
+                      >
+                        Nro Doc:
+                        {{
+                          item.nroDocumento_residente == null
+                            ? ''
+                            : item.nroDocumento_residente
+                        }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="size-px whitespace-nowrap">
+                    <div class="px-6 py-3">
+                      <span
+                        class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
+                      >
+                        {{
+                          item.name_visitante == null
+                            ? ''
+                            : item.name_visitante.toUpperCase()
+                        }}
+                      </span>
+                      <span
+                        class="block text-sm text-gray-500 dark:text-neutral-500"
+                      >
+                        Nro Doc:
+                        {{
+                          item.nroDocumento_visitante == null
+                            ? ''
+                            : item.nroDocumento_visitante
+                        }}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </TableGrl>
+            <!-- END TABLE -->
+          </div>
+          <Alert v-else :message="datas.messageList"></Alert>
         </div>
-        <Alert v-else :message="'Lista Vacia'"></Alert>
       </div>
     </div>
   </div>

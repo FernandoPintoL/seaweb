@@ -196,12 +196,12 @@ const createInformacion = async () => {
       console.log(response)
       Swal.fire({
         position: 'top-end',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
         title: response.data.message,
         showConfirmButton: false,
         timer: 1500,
       })
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         form.reset()
       }
     })
@@ -214,7 +214,7 @@ const createInformacion = async () => {
         showConfirmButton: false,
         timer: 1500,
       })
-      if (error.response.data.messageError) {
+      if (error.response.data.isMessageError) {
         if (error.response.data.message.razonSocial != null) {
           setErrorRazonSocial(error.response.data.message.razonSocial[0])
         } else {
@@ -248,7 +248,7 @@ const updateInformation = async () => {
       console.log(response)
       Swal.fire({
         position: 'top-end',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
         title: response.data.message,
         showConfirmButton: false,
         timer: 1500,
@@ -263,7 +263,7 @@ const updateInformation = async () => {
         showConfirmButton: false,
         timer: 1500,
       })
-      if (error.response.data.messageError) {
+      if (error.response.data.isMessageError) {
         if (error.response.data.message.razonSocial != null) {
           setErrorRazonSocial(error.response.data.message.razonSocial[0])
         } else {

@@ -78,6 +78,11 @@ Route::middleware([
     Route::post('/galeriavisitante/query',[GaleriaVisitanteController::class, 'query'])->name('galeriavisitante.query');
     Route::post('/galeriavisitante/visitante',[GaleriaVisitanteController::class, 'getGaleriaVisitante'])->name('galeriavisitante.getGaleriaVisitante');
     Route::post('/galeriavisitante/uploadimage', [GaleriaVisitanteController::class,'uploadimage'])->name('galeriavisitante.uploadimage');
+    Route::get('/galeriavisitante/descargar/{id}',[GaleriaVisitanteController::class, 'descargar'])->name('galeriavisitante.des');
+    Route::get('/galeriavisitante/descargardbpath/{id}',[GaleriaVisitanteController::class, 'descargarDBPath'])->name('galeriavisitante.descargardbpath');
+    Route::get('/galeriavisitante/descargardbphotopath/{id}',[GaleriaVisitanteController::class, 'descargarDBPhotoPath'])->name('galeriavisitante.descargardbphotopath');
+    Route::get('/galeriavisitante/descargardirectoriopath/{id}',[GaleriaVisitanteController::class, 'descargarDirectorioPath'])->name('galeriavisitante.descargardirectoriopath');
+    Route::get('/galeriavisitante/descargardirectoriourl/{id}',[GaleriaVisitanteController::class, 'descargarDirectorioUrl'])->name('galeriavisitante.descargarDirectorioUrl');
 
     /* GALERIA VEHICULO */
     Route::resource('/galeriavehiculo', GaleriaVehiculoController::class);

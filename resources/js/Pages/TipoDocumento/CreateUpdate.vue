@@ -101,7 +101,7 @@ const createInformacion = async () => {
       console.log(response.data)
       Swal.fire({
         position: 'top-end',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
         title: response.data.message,
         showConfirmButton: false,
         timer: 1500,
@@ -114,7 +114,7 @@ const createInformacion = async () => {
     })
     .catch((error) => {
       console.log(error.response)
-      if (error.response.data.messageError) {
+      if (error.response.data.isMessageError) {
         console.log(error.response.data.message)
         Swal.fire({
           position: 'top-end',
@@ -123,7 +123,7 @@ const createInformacion = async () => {
           showConfirmButton: false,
           timer: 1500,
         })
-        if (error.response.data.messageError) {
+        if (error.response.data.isMessageError) {
           if (error.response.data.message.sigla != null) {
             setErrorSigla(error.response.data.message.sigla)
           } else {
@@ -150,7 +150,7 @@ const updateInformation = async () => {
       console.log(response.data)
       Swal.fire({
         position: 'top-end',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
         title: response.data.message,
         showConfirmButton: false,
         timer: 1500,
@@ -160,7 +160,7 @@ const updateInformation = async () => {
     })
     .catch((error) => {
       console.log(error.response)
-      if (error.response.data.messageError) {
+      if (error.response.data.isMessageError) {
         console.log(error.response.data.message)
         Swal.fire({
           position: 'top-end',
@@ -169,7 +169,7 @@ const updateInformation = async () => {
           showConfirmButton: false,
           timer: 1500,
         })
-        if (error.response.data.messageError) {
+        if (error.response.data.isMessageError) {
           if (error.response.data.message.sigla != null) {
             setErrorSigla(error.response.data.message.sigla)
           } else {

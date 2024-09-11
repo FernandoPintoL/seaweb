@@ -20,20 +20,24 @@ class TipoVisitaController extends Controller
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "$str datos encontrados",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Consulta Visita/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -63,20 +67,24 @@ class TipoVisitaController extends Controller
             $model = TipoVisita::create($request->all());
             return response()->json([
                 "isRequest"=> true,
-                "success" => $model != null,
-                "messageError" => $model != null,
+                "isSuccess" => $model != null,
+                "isMessageError" => $model != null,
                 "message" => $model != null ? "Solicitud completada" : "Error!!!",
-                "data" => $model
+                "messageError" => "",
+                "data" => $model,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -91,20 +99,24 @@ class TipoVisitaController extends Controller
             // $perfil    = Perfil::findOrFail( $habitante->perfil_id );
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "Solicitud realizada correctamente...",
-                "data" => $apptipoVisita
+                "messageError" => "",
+                "data" => $apptipoVisita,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -131,30 +143,36 @@ class TipoVisitaController extends Controller
                     if ($validator->fails()) {
                         return response()->json( [
                             "isRequest" => true,
-                            "success" => false,
-                            "messageError" => true,
+                            "isSuccess" => false,
+                            "isMessageError" => true,
                             "message" => $validator->errors(),
-                            "data" => []
+                            "messageError" => $validator->errors(),
+                            "data" => [],
+                            "statusCode" => 422
                         ], 422 );
                     }
             }
             $response = $tipovisitum->update($request->all());
             return response()->json([
                 "isRequest"=> true,
-                "success" => $response,
-                "messageError" => !$response,
+                "isSuccess" => $response,
+                "isMessageError" => !$response,
                 "message" => $response ? "Datos actualizados correctamente" : "Datos no actualizados",
-                "data" => $response
+                "messageError" => "",
+                "data" => $response,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }

@@ -22,20 +22,24 @@ class TipoDocumentoController extends Controller
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "$str datos encontrados",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Consulta TipoDocumento/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -68,20 +72,24 @@ class TipoDocumentoController extends Controller
             $tipoDocumento = TipoDocumento::create($request->all());
             return response()->json([
                 "isRequest"=> true,
-                "success" => $tipoDocumento != null,
-                "messageError" => $tipoDocumento != null,
+                "isSuccess" => $tipoDocumento != null,
+                "isMessageError" => $tipoDocumento != null,
                 "message" => $tipoDocumento != null ? "Registro completo" : "Error!!!",
-                "data" => $tipoDocumento
+                "messageError" => "",
+                "data" => $tipoDocumento,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -96,20 +104,24 @@ class TipoDocumentoController extends Controller
             // $perfil    = Perfil::findOrFail( $habitante->perfil_id );
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "Solicitud realizada correctamente...",
-                "data" => $tipodocumento
+                "messageError" => "",
+                "data" => $tipodocumento,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -136,30 +148,36 @@ class TipoDocumentoController extends Controller
                     if ($validator->fails()) {
                         return response()->json( [
                             "isRequest" => true,
-                            "success" => false,
-                            "messageError" => true,
+                            "isSuccess" => false,
+                            "isMessageError" => true,
                             "message" => $validator->errors(),
-                            "data" => []
+                            "messageError" => $validator->errors(),
+                            "data" => [],
+                            "statusCode" => 422
                         ], 422 );
                     }
             }
             $response = $tipodocumento->update($request->all());
             return response()->json([
                 "isRequest"=> true,
-                "success" => $response,
-                "messageError" => !$response,
+                "isSuccess" => $response,
+                "isMessageError" => !$response,
                 "message" => $response ? "Datos actualizados correctamente" : "Datos no actualizados",
-                "data" => $response
+                "messageError" => "",
+                "data" => $response,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -173,20 +191,24 @@ class TipoDocumentoController extends Controller
             $response = $tipodocumento->delete();
             return response()->json([
                 "isRequest"=> true,
-                "success" => $response,
-                "messageError" => !$response,
+                "isSuccess" => $response,
+                "isMessageError" => !$response,
                 "message" => $response ? "Datos eliminados correctamente" : "Los datos no pudieron ser eliminados",
-                "data" => $response
+                "messageError" => "",
+                "data" => $response,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }

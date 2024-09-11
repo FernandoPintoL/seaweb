@@ -54,7 +54,7 @@ const queryList = async (id) => {
     .post(url)
     .then((response) => {
       console.log(response.data)
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         reactives.list = response.data.data
       }
     })
@@ -88,12 +88,12 @@ const cargarImagenes = async () => {
       )
       Swal.fire({
         position: 'top-end',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
         title: response.data.message,
         showConfirmButton: false,
         timer: 1500,
       })
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         image.value = null
         compressedImageUrl.value = null
         queryList(props.model.id)
@@ -159,25 +159,25 @@ const destroyPhotoModel = async (id) => {
     .then((response) => {
       console.log(response.data)
       Swal.fire({
-        title: response.data.success ? 'Buen Trabajo!' : 'Error!',
+        title: response.data.isSuccess ? 'Buen Trabajo!' : 'Error!',
         text: response.data.message,
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
       })
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         queryList(props.model.id)
       }
     })
     .catch((error) => {
-      if (error.messageError) {
+      if (error.isMessageError) {
         console.log(error.message)
         Swal.fire({
-          title: error.messageError
+          title: error.isMessageError
             ? 'Error desde el micro servicio!'
             : 'Algun otro error esta sucediendo!',
-          text: error.messageError
+          text: error.isMessageError
             ? 'Algunos datos fueron mal registrados'
             : 'Algun otro tipo de error sucedio',
-          icon: error.messageError ? 'error' : 'success',
+          icon: error.isMessageError ? 'error' : 'success',
         })
       }
     })

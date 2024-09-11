@@ -44,7 +44,7 @@ class UserController extends Controller
         $consult = User::where('email', $data['email'])->get();
         return response()->json(["cantidad" => count($consult)]);
     }
-    
+
     public function getUser(Request $request){
         $data = $request->all();
         $user = User::where('email', $data['query'])
@@ -68,11 +68,13 @@ class UserController extends Controller
             if($user == null){
                 return response()->json([
                     "isRequest"=> true,
-                    "success" => false,
-                    "messageError" => true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
                     "message" => "Error Usuario no encontrado...",
-                    "data" => []
-                ]);
+                    "messageError" => "",
+                    "data" => [],
+                    "statusCode" => 422,
+                ], 422);
             }
             if ($user && Hash::check($request->password, $user->password)) {
                 $userData = array(
@@ -84,38 +86,46 @@ class UserController extends Controller
                     $userLogin = auth()->user();
                     return response()->json([
                         "isRequest"=> true,
-                        "success" => true,
-                        "messageError" => false,
+                        "isSuccess" => true,
+                        "isMessageError" => false,
                         "message" => "Inicio de sessión correcto...",
-                        "data" => $userLogin
+                        "messageError" => "",
+                        "data" => $userLogin,
+                        "statusCode" => 200
                     ]);
                 }else{
                     return response()->json([
                         "isRequest"=> true,
-                        "success" => false,
-                        "messageError" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
                         "message" => "Usuario no pudó ser autenticado",
-                        "data" => $user
-                    ]);
+                        "messageError" => "",
+                        "data" => $user,
+                        "statusCode" => 422
+                    ],422);
                 }
             }else{
                 return response()->json([
                     "isRequest"=> true,
-                    "success" => false,
-                    "messageError" => true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
                     "message" => "Usuario encontrado, el password es incorrecto...",
-                    "data" => $user
-                ]);
+                    "messageError" => "",
+                    "data" => $user,
+                    "statusCode" => 422
+                ], 422);
             }
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -123,56 +133,37 @@ class UserController extends Controller
     {
         try{
             Auth::logout();
-    
+
             // $request->session()->invalidate();
-    
+
             // $request->session()->regenerateToken();
 
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "Session cerrada conrrectamente..",
-                "data" => $request->all()
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
         // return redirect('/login');
     }
-    /* public function destroy(Request $request): LogoutResponse
-    {
-        $this->guard->logout();
-
-        if ($request->hasSession()) {
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-        }
-
-        return app(LogoutResponse::class);
-    } */
 
     public function updateInformacion(Request $request, User $user){
-        /*$datas = $request->all();
-        return response()->json([
-                "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Verificacion User Informacion",
-                "data" => [
-                    "data" => $request->all(), 
-                    "user" => $user,
-                    "consulta" => $datas['email'] != $user->email || $datas['usernick'] != $user->usernick
-                    ]
-        ]);*/
         try{
             $datas = $request->all();
             if($datas['email'] != $user->email || $datas['usernick'] != $user->usernick){
@@ -181,48 +172,54 @@ class UserController extends Controller
                     'usernick' => ['unique:users']
                 ]);
                 if ($validator->fails()) {
-                    return response()->json( [ 
+                    return response()->json( [
                         "isRequest" => true,
-                        "success" => false,
-                        "messageError" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
                         "message" => $validator->errors(),
-                        "data" => []
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
                     ], 422 );
                 }
             }
             //ACTUALIZAR EL NAME EL PERFIL
             $condominio = Condominio::where('user_id','=',$datas['id'])->first();
             $perfil     = $condominio->perfil;
-            $condominio->update([ 
+            $condominio->update([
                 'propietario' => $datas['name']
             ]);
-            $perfil->update([ 
+            $perfil->update([
                 'name' => $datas['name'],
                 'email' => $datas['email']
             ]);
-            $responsse = $user->update([ 
+            $responsse = $user->update([
                 'name' => $datas['name'],
                 'email' => $datas['email'],
                 'usernick' => $datas['usernick']
             ]);
             return response()->json([
                 "isRequest"=> true,
-                "success" => $responsse != null,
-                "messageError" => $responsse != null,
+                "isSuccess" => $responsse != null,
+                "isMessageError" => $responsse != null,
                 "message" => $responsse != null ? "Actualización completo" : "Error!!!",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
-        }        
+        }
     }
     /**
      * Display a listing of the resource.

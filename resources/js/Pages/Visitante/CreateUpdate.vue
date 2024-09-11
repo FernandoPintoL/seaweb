@@ -75,7 +75,7 @@ const queryListGaleria = async (id) => {
     .post(url)
     .then((response) => {
       console.log(response.data)
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         reactives.listGaleria = response.data.data
       }
     })
@@ -165,12 +165,12 @@ const createInformacion = async () => {
     .then((response) => {
       Swal.fire({
         position: 'top-end',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
         title: response.data.message,
         showConfirmButton: false,
         timer: 1500,
       })
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         form.reset()
       }
     })
@@ -182,7 +182,7 @@ const createInformacion = async () => {
         showConfirmButton: false,
         timer: 1500,
       })
-      if (error.response.data.messageError) {
+      if (error.response.data.isMessageError) {
         if (error.response.data.message.nroDocumento != null) {
           setErrorNroDocumento(error.response.data.message.nroDocumento)
         } else {
@@ -200,7 +200,7 @@ const updateInformation = async () => {
     .then((response) => {
       Swal.fire({
         position: 'top-end',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
         title: response.data.message,
         showConfirmButton: false,
         timer: 1500,
@@ -214,7 +214,7 @@ const updateInformation = async () => {
         showConfirmButton: false,
         timer: 1500,
       })
-      if (error.response.data.messageError) {
+      if (error.response.data.isMessageError) {
         if (error.response.data.message.nroDocumento != null) {
           setErrorNroDocumento(error.response.data.message.nroDocumento)
         } else {
@@ -230,7 +230,7 @@ const queryDocument = async (consulta) => {
   await axios
     .post(url)
     .then((response) => {
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         reactives.list_typedocument = response.data.data
         if (reactives.list_typedocument.length > 0) {
           if (props.model != null) {

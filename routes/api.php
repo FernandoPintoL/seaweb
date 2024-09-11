@@ -55,6 +55,8 @@ Route::apiResource('appgaleriavisitante', GaleriaVisitanteController::class);
 Route::post('/appgaleriavisitante/query', [GaleriaVisitanteController::class,'query'])->name('appgaleriavisitante.query');
 Route::post('/appgaleriavisitante/uploadimage', [GaleriaVisitanteController::class,'uploadimage'])->name('appgaleriavisitante.uploadimage');
 Route::post('/appgaleriavisitante/visitanteid',[GaleriaVisitanteController::class, 'getGaleriaVisitante'])->name('appgaleriavisitante.visitanteid');
+Route::post('/appgaleriavisitante/destroyapp',[GaleriaVisitanteController::class, 'destroyApp'])->name('appgaleriavisitante.destroyApp');
+// Route::post('/appgaleriavisitante/downloadGaleria',[GaleriaVisitanteController::class, 'downloadGaleria'])->name('appgaleriavisitante.downloadGaleria');
 /** GALERIA DE VEHICULOS **/
 Route::apiResource('appgaleriavehiculo', GaleriaVehiculoController::class);
 Route::post('/appgaleriavehiculo/query', [GaleriaVehiculoController::class,'query'])->name('appgaleriavehiculo.query');

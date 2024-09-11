@@ -61,7 +61,7 @@ const queryDateList = async (date_start, date_end) => {
     .post(url)
     .then((response) => {
       console.log(response.data)
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         datas.list = response.data.data
         datas.messageList = response.data.message
         datas.metodoList =
@@ -86,7 +86,7 @@ const queryList = async (consulta) => {
   await axios
     .post(url)
     .then((response) => {
-      if (response.data.success) {
+      if (response.data.isSuccess) {
         datas.list = response.data.data
         datas.messageList = response.data.message
         datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
@@ -111,24 +111,24 @@ const destroyData = async (id) => {
     .delete(url)
     .then((response) => {
       Swal.fire({
-        title: response.data.success ? 'Buen Trabajo!' : 'Error!',
-        text: response.data.success
+        title: response.data.isSuccess ? 'Buen Trabajo!' : 'Error!',
+        text: response.data.isSuccess
           ? 'Dato creado exitosamente'
           : 'Algún error inesperado',
-        icon: response.data.success ? 'success' : 'error',
+        icon: response.data.isSuccess ? 'success' : 'error',
       })
     })
     .catch((error) => {
-      if (error.messageError) {
+      if (error.isMessageError) {
         console.log(error.message)
         Swal.fire({
-          title: error.messageError
+          title: error.isMessageError
             ? 'Error desde el micro servicio!'
             : 'Algun otro error esta sucediendo!',
-          text: error.messageError
+          text: error.isMessageError
             ? 'Algunos datos fueron mal registrados'
             : 'Algun otro tipo de error sucedio',
-          icon: error.messageError ? 'error' : 'success',
+          icon: error.isMessageError ? 'error' : 'success',
         })
       }
     })
@@ -221,139 +221,145 @@ const destroyData = async (id) => {
     <div class="flex flex-col">
       <div class="-m-1.5 overflow-x-auto">
         <div class="p-1.5 min-w-full inline-block align-middle">
-          <div v-show="datas.isLoad">
+          <div v-if="datas.isLoad">
             <Loader />
           </div>
-          <div
-            v-if="datas.list.length > 0"
-            class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
-          >
-            <!-- Table -->
-            <TableGrl>
-              <template #tbl-header>
-                <tr>
-                  <th scope="col" class="px-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        ID
-                      </span>
-                    </div>
-                  </th>
-
-                  <th scope="col" class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        Nombre
-                      </span>
-                    </div>
-                  </th>
-
-                  <th scope="col" class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        Creado
-                      </span>
-                    </div>
-                  </th>
-                  <th scope="col" class="px-6 py-3 text-start">
-                    <div class="flex items-center gap-x-2">
-                      <span
-                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                      >
-                        _
-                      </span>
-                    </div>
-                  </th>
-                </tr>
-              </template>
-              <template #tbl-body>
-                <tr v-for="item in datas.list" :key="item.id">
-                  <td class="h-px w-72 whitespace-nowrap">
-                    <div class="px-6 py-3">
-                      <span
-                        class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                      >
-                        #{{ item.id }}
-                      </span>
-                      <span
-                        class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                      >
-                        NroDocumento:
-                        {{ item.nroDocumento == null ? '' : item.nroDocumento }}
-                      </span>
-                      <span
-                        class="block text-sm text-gray-500 dark:text-neutral-500"
-                      >
-                        Nro Vivienda:
-                        {{ item.nroVivienda == null ? '' : item.nroVivienda }}
-                      </span>
-                    </div>
-                  </td>
-                  <td class="h-px w-72 whitespace-nowrap">
-                    <div class="px-6 py-3">
-                      <span
-                        class="block text-sm text-gray-500 dark:text-neutral-500"
-                      >
-                        {{ item.name == null ? '' : item.name }}
-                      </span>
-                      <span
-                        :class="
-                          item.isDuenho
-                            ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
-                            : 'text-orange-800 bg-red-100 dark:text-orange-500'
-                        "
-                        class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
-                      >
-                        <svg
-                          class="size-2.5"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="currentColor"
-                          viewBox="0 0 16 16"
+          <div v-else>
+            <div
+              v-if="datas.list.length > 0"
+              class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
+            >
+              <!-- Table -->
+              <TableGrl>
+                <template #tbl-header>
+                  <tr>
+                    <th scope="col" class="px-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
                         >
-                          <path
-                            d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                          />
-                        </svg>
-                        {{ item.isDuenho ? 'DUEÑO' : 'NO ES DUEÑO' }}
-                      </span>
-                    </div>
-                  </td>
-                  <td class="h-px w-72 whitespace-nowrap">
-                    <div class="px-6 py-3">
-                      <span
-                        class="block text-sm text-gray-500 dark:text-neutral-500"
-                      >
-                        {{
-                          item.created_at == null ? '' : fecha(item.created_at)
-                        }}
-                      </span>
-                    </div>
-                  </td>
-                  <td class="h-px w-72 whitespace-nowrap">
-                    <div class="px-6 py-3">
-                      <Link
-                        :href="route('habitante.edit', item.id)"
-                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                      >
-                        Editar
-                        <i class="fa-solid fa-pencil"></i>
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              </template>
-            </TableGrl>
-            <!-- End Table -->
+                          ID
+                        </span>
+                      </div>
+                    </th>
+
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          Nombre
+                        </span>
+                      </div>
+                    </th>
+
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          Creado
+                        </span>
+                      </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span
+                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                        >
+                          _
+                        </span>
+                      </div>
+                    </th>
+                  </tr>
+                </template>
+                <template #tbl-body>
+                  <tr v-for="item in datas.list" :key="item.id">
+                    <td class="h-px w-72 whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span
+                          class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
+                        >
+                          #{{ item.id }}
+                        </span>
+                        <span
+                          class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
+                        >
+                          NroDocumento:
+                          {{
+                            item.nroDocumento == null ? '' : item.nroDocumento
+                          }}
+                        </span>
+                        <span
+                          class="block text-sm text-gray-500 dark:text-neutral-500"
+                        >
+                          Nro Vivienda:
+                          {{ item.nroVivienda == null ? '' : item.nroVivienda }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="h-px w-72 whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span
+                          class="block text-sm text-gray-500 dark:text-neutral-500"
+                        >
+                          {{ item.name == null ? '' : item.name }}
+                        </span>
+                        <span
+                          :class="
+                            item.isDuenho
+                              ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
+                              : 'text-orange-800 bg-red-100 dark:text-orange-500'
+                          "
+                          class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
+                        >
+                          <svg
+                            class="size-2.5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
+                            />
+                          </svg>
+                          {{ item.isDuenho ? 'DUEÑO' : 'NO ES DUEÑO' }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="h-px w-72 whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span
+                          class="block text-sm text-gray-500 dark:text-neutral-500"
+                        >
+                          {{
+                            item.created_at == null
+                              ? ''
+                              : fecha(item.created_at)
+                          }}
+                        </span>
+                      </div>
+                    </td>
+                    <td class="h-px w-72 whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <Link
+                          :href="route('habitante.edit', item.id)"
+                          class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                        >
+                          Editar
+                          <i class="fa-solid fa-pencil"></i>
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </TableGrl>
+              <!-- End Table -->
+            </div>
+            <Alert v-else :message="datas.messageList"></Alert>
           </div>
-          <Alert v-else :message="'Lista Vacia'"></Alert>
         </div>
       </div>
     </div>

@@ -29,20 +29,24 @@ class CondominioController extends Controller
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMesageError" => false,
                 "message" => "$str datos encontrados",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode"=> 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Consulta condominio/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -69,13 +73,6 @@ class CondominioController extends Controller
      */
     public function store(StoreCondominioRequest $request)
     {
-        /*return response()->json([
-                "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Verificacion Condominio",
-                "data" => $request->all()
-        ]);*/
         try{
             $perfilRequest = $request->perfil;
             $userRequest   = $request->user;
@@ -86,10 +83,12 @@ class CondominioController extends Controller
             if ($validatorPerfil->fails()) {
                 return response()->json( [
                     "isRequest" => true,
-                    "success" => false,
-                    "messageError" => true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
                     "message" => $validatorPerfil->errors(),
-                    "data" => []
+                    "messageError" => $validatorPerfil->errors(),
+                    "data" => [],
+                    "statusCode" => 422
                 ], 422 );
             }
             $validatorUser = Validator::make($userRequest, [
@@ -99,9 +98,10 @@ class CondominioController extends Controller
             if ($validatorUser->fails()) {
                 return response()->json( [
                     "isRequest" => true,
-                    "success" => false,
-                    "messageError" => true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
                     "message" => $validatorUser->errors(),
+                    "messageError" => $validatorUser->errors(),
                     "data" => []
                 ], 422 );
             }
@@ -127,20 +127,24 @@ class CondominioController extends Controller
             ]);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "Solicitud realizada correctamente...",
-                "data" => ["response" => $responsse, "user" => $user, "perfil" => $perfil]
+                "messageError" => "",
+                "data" => ["response" => $responsse, "user" => $user, "perfil" => $perfil],
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Store condominio error-message: / ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -179,10 +183,12 @@ class CondominioController extends Controller
                 if ($validator->fails()) {
                     return response()->json( [
                         "isRequest" => true,
-                        "success" => false,
-                        "messageError" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
                         "message" => $validator->errors(),
-                        "data" => []
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
                     ], 422 );
                 }
             }
@@ -193,10 +199,12 @@ class CondominioController extends Controller
                 if ($validator->fails()) {
                     return response()->json( [
                         "isRequest" => true,
-                        "success" => false,
-                        "messageError" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
                         "message" => $validator->errors(),
-                        "data" => []
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
                     ], 422 );
                 }
                 $perfil = $datas['perfil'];
@@ -206,10 +214,12 @@ class CondominioController extends Controller
                 if ($validator->fails()) {
                     return response()->json( [
                         "isRequest" => true,
-                        "success" => false,
-                        "messageError" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
                         "message" => $validator->errors(),
-                        "data" => []
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
                     ], 422 );
                 }
             }
@@ -226,20 +236,24 @@ class CondominioController extends Controller
             $responsse = $condominio->update( $datas );
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "Solicitud realizada correctamente...",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Update solicitud error-message: / ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }

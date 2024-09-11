@@ -7,8 +7,10 @@ use App\Http\Requests\StoreGaleriaVisitanteRequest;
 use App\Http\Requests\UpdateGaleriaVisitanteRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\File;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class GaleriaVisitanteController extends Controller
 {
@@ -52,20 +54,24 @@ class GaleriaVisitanteController extends Controller
             }
             return response()->json([
                 "isRequest"=> true,
-                "success" => $request->hasFile('file') && ($path != null || $path != 0),
-                "messageError" => !$request->hasFile('file') && ($path == null || $path == 0),
+                "isSuccess" => $request->hasFile('file') && ($path != null || $path != 0),
+                "isMessageError" => !$request->hasFile('file') && ($path == null || $path == 0),
                 "message" => $path != null || $path != 0 ? "Archivos subidos" : "Archivos no subidos",
-                "data" => $response
+                "messageError" => $path != null || $path != 0 ? "Archivos subidos" : "Archivos no subidos",
+                "data" => $response,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -79,20 +85,24 @@ class GaleriaVisitanteController extends Controller
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "$str datos encontrados",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Consulta galeria visitantes/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -104,11 +114,12 @@ class GaleriaVisitanteController extends Controller
             $responsse  = [];
             if($request->get('skip') == null && $request->get('take') == null){
                 $responsse = DB::table('galeria_visitantes as gv')
-                            ->select('gv.id as id','gv.*','v.id as v_id','v.*','p.name','p.nroDocumento', 'p.celular')
+                            ->select('gv.id as id','gv.*','v.id as v_id','v.*','p.id as p_id','p.name','p.nroDocumento', 'p.celular')
                             ->join('visitantes as v', 'v.id', '=', 'gv.visitante_id')
                             ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
                             ->where('p.name','LIKE',"%".$queryUpper."%")
-                            ->orWhere('p.nroDocumento','LIKE',"%".$queryUpper."%")
+                            ->orWhere('p.nroDocumento','=', $queryUpper)
+                            ->groupBy('gv.id', 'v.id', 'p.id')
                             ->orderBy('gv.id', 'DESC')
                             ->get();
             }else{
@@ -129,20 +140,24 @@ class GaleriaVisitanteController extends Controller
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "$str datos encontrados",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Consulta galeria visitantes/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -150,10 +165,22 @@ class GaleriaVisitanteController extends Controller
      * Display a listing of the resource.
      */
 
-
     public function index()
     {
-        //
+        $listado = DB::table('galeria_visitantes as gv')
+                    ->select('gv.id as id','gv.*','v.id as v_id','v.*','p.id as p_id','p.name','p.nroDocumento')
+                    ->join('visitantes as v', 'gv.visitante_id', '=', 'v.id')
+                    ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
+                    ->groupBy('gv.id', 'v.id', 'p.id')
+                    ->skip(0)
+                    ->take(20)
+                    ->get();
+        $galeria = GaleriaVisitante::all();
+        $directorio = Storage::files( 'visitantes' );
+        return Inertia::render("GaleriaVisitante/Index", [
+            'listado'=> $listado,
+            'galeria' => $galeria]);
+
     }
 
     /**
@@ -206,20 +233,24 @@ class GaleriaVisitanteController extends Controller
             $responseData = $galeriavisitante->delete();
             return response()->json([
                 "isRequest"=> true,
-                "success" => $responseData && $responseFile,
-                "messageError" => !$responseData && !$responseFile,
+                "isSuccess" => $responseData && $responseFile,
+                "isMessageError" => !$responseData && !$responseFile,
                 "message" => $responseData && $responseFile ? "TRANSACCION CORRECTA": "TRANSACCION INCORRECTA",
-                "data" => []
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Destroy galeria visitantes/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -227,24 +258,171 @@ class GaleriaVisitanteController extends Controller
     public function destroyApp(GaleriaVisitante $appgaleriaVisitante)
     {
         try{
-            Storage::disk('public')->delete($appgaleriaVisitante->detalle);
-            $responseData = $appgaleriaVisitante->delete();
+            $existe = Storage::disk( 'public' )->exists( $appgaleriaVisitante->detalle );
+            if ($existe) {
+                Storage::disk('public')->delete($appgaleriaVisitante->detalle);
+                $responseData = $appgaleriaVisitante->delete();
+            }
+
             return response()->json([
                 "isRequest"=> true,
-                "success" => $responseData,
-                "messageError" => !$responseData,
+                "isSuccess" => $existe,
+                "isMessageError" => !$existe,
                 "message" => $responseData ? "TRANSACCION CORRECTA": "TRANSACCION INCORRECTA",
-                "data" => []
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Destroy galeria visitantes/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
+    }
+
+
+    public function descargar($id){
+        try{
+            // $directorio = Storage::files( 'visitantes' );
+            $galeria = GaleriaVisitante::findOrFail( $id )->first();
+            if ($galeria) {
+                $link = "https://sea-production-2d37.up.railway.app/storage/".$galeria->detalle;
+                return response()->download($link);
+            }else{
+                return response()->json([
+                    "isRequest"=> true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
+                    "message" => "TRANSACCION INCORRECTA DIRECTORIO NO ENCONTRADO",
+                    "messageError" => "",
+                    "data" => [],
+                    "statusCode" => 423
+                ]);
+            }
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
+    }
+
+    public function descargarDBPath($id){
+        try{
+            // $directorio = Storage::files( 'visitantes' );
+            $galeria = GaleriaVisitante::findOrFail( $id )->first();
+            if ($galeria) {
+                $link = public_path($galeria->detalle);
+                return response()->download($link);
+            }else{
+                return response()->json([
+                    "isRequest"=> true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
+                    "message" => "TRANSACCION INCORRECTA DIRECTORIO NO ENCONTRADO",
+                    "messageError" => "",
+                    "data" => [],
+                    "statusCode" => 423
+                ]);
+            }
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
+    }
+
+    public function descargarDBPhotoPath($id){
+        try{
+            // $directorio = Storage::files( 'visitantes' );
+            $galeria = GaleriaVisitante::findOrFail( $id )->first();
+            if ($galeria) {
+                return response()->download($galeria->photo_path);
+            }else{
+                return response()->json([
+                    "isRequest"=> true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
+                    "message" => "TRANSACCION INCORRECTA DIRECTORIO NO ENCONTRADO",
+                    "messageError" => "",
+                    "data" => [],
+                    "statusCode" => 423
+                ]);
+            }
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
+    }
+
+    public function descargarDirectorioPath($id){
+        try{
+            $directorio = Storage::files( 'visitantes' );
+            $link = public_path("storage/".$directorio[$id]);
+            return response()->download($link);
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
+    }
+
+    public function descargarDirectorioUrl($id){
+        try{
+            $directorio = Storage::files( 'visitantes' );
+            $link = "https://sea-production-2d37.up.railway.app/storage/storage/".$directorio[$id];
+            return response()->download($link);
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }

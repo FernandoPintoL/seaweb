@@ -46,20 +46,24 @@ class GaleriaVehiculoController extends Controller
             }
             return response()->json([
                 "isRequest"=> true,
-                "success" => $request->hasFile('file') && ($path != null || $path != 0),
-                "messageError" => !$request->hasFile('file') && ($path == null || $path == 0),
+                "isSuccess" => $request->hasFile('file') && ($path != null || $path != 0),
+                "isMessageError" => !$request->hasFile('file') && ($path == null || $path == 0),
                 "message" => $path != null || $path != 0 ? "Archivos subidos" : "Archivos no subidos",
-                "data" => $response
+                "messageError" => "",
+                "data" => $response,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => $message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -74,20 +78,24 @@ class GaleriaVehiculoController extends Controller
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "$str datos encontrados",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Consulta galeria visitantes/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -120,20 +128,24 @@ class GaleriaVehiculoController extends Controller
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
-                "success" => true,
-                "messageError" => false,
+                "isSuccess" => true,
+                "isMessageError" => false,
                 "message" => "$str datos encontrados",
-                "data" => $responsse
+                "messageError" => "",
+                "data" => $responsse,
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Consulta galeria vehiculos/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
@@ -195,20 +207,46 @@ class GaleriaVehiculoController extends Controller
             $responseData = $galeriavehiculo->delete();
             return response()->json([
                 "isRequest"=> true,
-                "success" => $responseData && $responseFile,
-                "messageError" => !$responseData && !$responseFile,
+                "isSuccess" => $responseData && $responseFile,
+                "isMessageError" => !$responseData && !$responseFile,
                 "message" => $responseData && $responseFile ? "TRANSACCION CORRECTA": "TRANSACCION INCORRECTA",
-                "data" => []
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => 200
             ]);
         }catch(\Exception $e){
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
                 "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Destroy galeria visitantes/ ".$message." Code: ".$code,
-                "data" => []
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
+    }
+
+    public function descargar($id){
+        try{
+            $directorio = Storage::files( 'vehiculos' );
+            $link = "https://sea-production-2d37.up.railway.app/storage/".$directorio[$id];
+            // $link = public_path("storage/".$directorio[$id]);
+            // dd( $link );
+            return response()->download($link);
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
             ]);
         }
     }
