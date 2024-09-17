@@ -45,10 +45,12 @@ class StorePerfilRequest extends FormRequest
     protected function failedValidation(Validator $validator){
         throw new HttpResponseException(response()->json([
             "isRequest"=> true,
-            "success" => false,
-            "messageError" => true,
+            "isSuccess" => false,
+            "isMessageError" => true,
             "message" => $validator->errors(),
-            "data" => []
+            "messageError" => $validator->errors(),
+            "data" => [],
+            "statusCode" => 422
         ], 422));
     }
 }

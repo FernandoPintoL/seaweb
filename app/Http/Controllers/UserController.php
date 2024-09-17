@@ -17,8 +17,8 @@ class UserController extends Controller
     public function token(Request $request){
         // return $request->all();
         $token = "";
-        $user = User::where('email', $request->email)->first();
-        if(!$user || !Hash::check($request->password, $user->password)){
+        $user = User::where('email', '=',$request->get('email'))->first();
+        if(!$user || !Hash::check($request->get('password'), $user->password)){
             return response()->json([
                 'message' => 'credenciales incorrectas',
                 'token' => $token]);

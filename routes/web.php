@@ -16,6 +16,8 @@ use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\ViviendaController;
 use App\Http\Controllers\IngresoController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -33,7 +35,33 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
+        $listado = DB::table('ingresos as i')
+                        ->select('i.id as id',
+                                'i.*',
+                                'h.id as id_residente',
+                                'p.name as name_residente',
+                                'p.nroDocumento as nroDocumento_residente',
+                                'vvd.id as id_vivienda',
+                                'vvd.nroVivienda',
+                                'v.id as id_visitante',
+                                'v.is_permitido',
+                                'v.description_is_no_permitido',
+                                'pv.nroDocumento as nroDocumento_visitante',
+                                'pv.name as name_visitante',
+                                'tv.id as tv_id',
+                                'tv.sigla as tv_sigla',
+                                'tv.detalle as tv_detalle')
+                        ->join('habitantes as h', 'h.id', '=', 'i.residente_habitante_id')
+                        ->join('viviendas as vvd', 'h.vivienda_id', '=', 'vvd.id')
+                        ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
+                        ->join('visitantes as v', 'v.id', '=', 'i.visitante_id')
+                        ->join('perfils as pv', 'v.perfil_id', '=', 'pv.id')
+                        ->join('tipo_visitas as tv', 'i.tipo_visita_id', '=', 'tv.id')
+                        ->skip(0)
+                        ->take(10)
+                        ->orderBy('id', 'DESC')
+                        ->get();
+        return Inertia::render('Dashboard', ['listado' => $listado]);
     })->name('dashboard');
     /* CONDOMINIOS RUTAS */
     Route::resource('condominio', CondominioController::class);
@@ -79,13 +107,16 @@ Route::middleware([
     Route::post('/galeriavisitante/visitante',[GaleriaVisitanteController::class, 'getGaleriaVisitante'])->name('galeriavisitante.getGaleriaVisitante');
     Route::post('/galeriavisitante/uploadimage', [GaleriaVisitanteController::class,'uploadimage'])->name('galeriavisitante.uploadimage');
     Route::get('/galeriavisitante/descargar/{id}',[GaleriaVisitanteController::class, 'descargar'])->name('galeriavisitante.des');
-    Route::get('/galeriavisitante/descargardbpath/{id}',[GaleriaVisitanteController::class, 'descargarDBPath'])->name('galeriavisitante.descargardbpath');
-    Route::get('/galeriavisitante/descargardbphotopath/{id}',[GaleriaVisitanteController::class, 'descargarDBPhotoPath'])->name('galeriavisitante.descargardbphotopath');
+    Route::get('/galeriavisitante/descargardbpathdetalle/{id}',[GaleriaVisitanteController::class, 'descargarDBPathDetalle'])->name('galeriavisitante.descargardbphotopath');
     Route::get('/galeriavisitante/descargardirectoriopath/{id}',[GaleriaVisitanteController::class, 'descargarDirectorioPath'])->name('galeriavisitante.descargardirectoriopath');
     Route::get('/galeriavisitante/descargardirectoriourl/{id}',[GaleriaVisitanteController::class, 'descargarDirectorioUrl'])->name('galeriavisitante.descargarDirectorioUrl');
 
     /* GALERIA VEHICULO */
     Route::resource('/galeriavehiculo', GaleriaVehiculoController::class);
+    Route::get('/galeriavehiculo/descargar/{id}',[GaleriaVehiculoController::class, 'descargar'])->name('galeriavehiculo.des');
+    Route::get('/galeriavehiculo/descargardbpathdetalle/{id}',[GaleriaVehiculoController::class, 'descargarDBPathDetalle'])->name('galeriavehiculo.descargardbphotopath');
+    Route::get('/galeriavehiculo/descargardirectoriopath/{id}',[GaleriaVehiculoController::class, 'descargarDirectorioPath'])->name('galeriavehiculo.descargardirectoriopath');
+    Route::get('/galeriavehiculo/descargardirectoriourl/{id}',[GaleriaVehiculoController::class, 'descargarDirectorioUrl'])->name('galeriavehiculo.descargarDirectorioUrl');
 
     /* ACTUALIZAR INFORMACION DE USUARIO*/
     Route::put('/user/updateinformacion/{user}',[UserController::class, 'updateInformacion'])->name('user.updateinformacion');

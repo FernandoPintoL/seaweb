@@ -27,11 +27,7 @@ const props = defineProps({
 const Swal = inject('$swal')
 
 onMounted(() => {
-  /* console.log(props.directorio.length)
-  console.log(props.listado.length) */
   datas.list = props.listado
-  console.log(props.directorio)
-  console.log(props.directorio[0])
 })
 
 const datas = reactive({
@@ -42,12 +38,23 @@ const datas = reactive({
   dateEnd: '',
   messageList: '',
   metodoList: '',
+  token: '',
 })
 
 const query = ref('')
 
 const onSearchQuery = (e) => {
   queryList(e.target.value)
+}
+
+const descargarBlob = async () => {
+  await getToken()
+  props.galeria.forEach((element) =>
+    // openURL('/galeriavisitante/descargar/' + element.id),
+    downloadImage(element.photo_path),
+  )
+  console.log(props.galeria[0].photo_path)
+  console.log(datas.token)
 }
 
 const descargarPhotoPath = () => {
@@ -58,13 +65,13 @@ const descargarPhotoPath = () => {
 
 const descargarDBPathDetalle = () => {
   props.galeria.forEach((element) =>
-    openURL('/galeriavisitante/descargardbpathdetalle/' + element.id),
+    openURL('/galeriavehiculo/descargardbpathdetalle/' + element.id),
   )
 }
 
 const descargarDirectorioPath = () => {
   for (let i = 0; i < props.directorio.length; i++) {
-    openURL('/galeriavisitante/descargardirectoriopath/' + i)
+    openURL('/galeriavehiculo/descargardirectoriopath/' + i)
   }
   /*props.directorio.forEach((element) =>
     openURL('/galeriavisitante/descargardirectoriopath/' + element.id),
@@ -73,7 +80,7 @@ const descargarDirectorioPath = () => {
 
 const descargarDirectorioUrl = () => {
   for (let i = 0; i < props.directorio.length; i++) {
-    openURL('/galeriavisitante/descargardirectoriourl/' + i)
+    openURL('/galeriavehiculo/descargardirectoriourl/' + i)
   }
   /*props.directorio.forEach((element) =>
     openURL('/galeriavisitante/descargardirectoriourl/' + element.id),
@@ -82,7 +89,7 @@ const descargarDirectorioUrl = () => {
 
 const queryList = async (consulta) => {
   datas.isLoad = true
-  const url = route('appgaleriavisitante.query', {
+  const url = route('appgaleriavehiculo.query', {
     query: consulta.toUpperCase(),
   })
   await axios
@@ -107,6 +114,57 @@ const queryList = async (consulta) => {
 
 const openURL = (url) => {
   window.open(url, '_blank')
+}
+
+const downloadImage = async (url) => {
+  try {
+    // Reemplaza la URL con la dirección de la imagen que quieras descargar
+    // const imageUrl = "https://example.com/imagen.jpg";
+
+    // Solicitud para obtener la imagen como un blob
+    var response = await axios.get(url, {
+      responseType: 'blob',
+      headers: {
+        Authorization: `Bearer ${datas.token}`,
+      },
+    })
+
+    // Crear un enlace y asignar el blob como un archivo descargable
+    const blob = new Blob([response.data], { type: 'image/jpeg' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'imagen.jpg'
+    link.click()
+
+    // Liberar la URL después de descargar
+    URL.revokeObjectURL(link.href)
+  } catch (error) {
+    console.error('Error al descargar la imagen', error)
+  }
+}
+
+const getToken = async () => {
+  const url = route('users.token', {
+    email: 'sevilla@gmail.com',
+    password: '123456789',
+  })
+  await axios
+    .post(url)
+    .then((response) => {
+      console.log(response)
+      datas.token = response.data.token
+    })
+    .catch((error) => {
+      console.log(error)
+      Swal.fire({
+        position: 'top-end',
+        icon: 'error',
+        title: 'OBTENER TOKEN',
+        text: error,
+        showConfirmButton: false,
+        timer: 1500,
+      })
+    })
 }
 
 const fecha = (fechaData) => {
@@ -164,17 +222,23 @@ const destroyPhotoModel = async (id) => {
 </script>
 
 <template>
-  <AppLayout title="Galeria Visitantes">
+  <AppLayout title="Galeria Vehiculos">
     <div
       class="p-4 md:p-2 flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
     >
       <!-- Header -->
-      <HeaderIndex :title="'Galeria Visitantes'">
+      <HeaderIndex :title="'Galeria Vehiculos'">
         <template #link></template>
       </HeaderIndex>
       <div
         class="px-3 py-2 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200 dark:border-neutral-700"
       >
+        <button
+          class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-yellow-600 text-white hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700 disabled:opacity-50 disabled:pointer-events-none"
+          @click="descargarBlob"
+        >
+          DESCARGAR BLOB
+        </button>
         <button
           class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
           @click="descargarPhotoPath"
@@ -271,9 +335,8 @@ const destroyPhotoModel = async (id) => {
                     :alt="item.detalle"
                   />
                   <p>ID: {{ item.id }}</p>
-                  <p>ID VISITANTE: {{ item.visitante_id }}</p>
-                  <p>Nombre: {{ item.name }}</p>
-                  <p>Nro Documento: {{ item.nroDocumento }}</p>
+                  <p>ID VISITANTE: {{ item.vehiculo_id }}</p>
+                  <p>Placa: {{ item.placa }}</p>
                   <p class="text-xs">{{ item.detalle }}</p>
                   <div class="inline-flex rounded-lg shadow-sm">
                     <button

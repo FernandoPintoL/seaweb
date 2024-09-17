@@ -110,9 +110,13 @@ class VisitanteController extends Controller
      */
     public function index()
     {
-        $listado = DB::table( 'visitantes as v' )
-            ->select( 'v.id as id', 'v.*', 'p.name', 'p.nroDocumento', 'p.celular' )
-            ->join( 'perfils as p', 'v.perfil_id', '=', 'p.id' )->get();
+        $listado = $responsse = DB::table('visitantes as v')
+                            ->select('v.id as id','v.*','p.name','p.nroDocumento', 'p.celular')
+                            ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
+                            ->skip(0)
+                            ->take(20)
+                            ->orderBy('v.id', 'DESC')
+                            ->get();
         return Inertia::render("Visitante/Index", ['listado'=> $listado]);
     }
 

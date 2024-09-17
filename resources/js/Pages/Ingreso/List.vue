@@ -8,6 +8,13 @@ import moment from 'moment-timezone'
 import FormSearch from '@/Componentes/FormSearch.vue'
 import Alert from '@/Componentes/Alerts.vue'
 
+const props = defineProps({
+  listado: {
+    type: Array,
+    default: [],
+  },
+})
+
 const Swal = inject('$swal')
 
 const datas = reactive({
@@ -20,8 +27,9 @@ const datas = reactive({
 })
 
 onMounted(() => {
+  datas.list = props.listado
   // addInputEventListeners()
-  queryList('')
+  //   queryList('')
 })
 
 const query = ref('')
@@ -68,6 +76,33 @@ const queryDateList = async (date_start, date_end) => {
           datas.list.length > 0
             ? ' con: Inicio' + date_start + ' | Fin' + date_end
             : ''
+        console.log(datas.list.length)
+      } else {
+        datas.list = []
+      }
+    })
+    .catch((error) => {
+      console.log('respuesta error')
+      console.log(error)
+    })
+  datas.isLoad = false
+}
+
+const queryListSaltoTake = async (consulta, skip, take) => {
+  datas.isLoad = true
+  const url = route('ingreso.query', {
+    query: consulta.toUpperCase(),
+    skip: skip,
+    take: take,
+  })
+  await axios
+    .post(url)
+    .then((response) => {
+      console.log(response.data)
+      if (response.data.isSuccess) {
+        datas.list = response.data.data
+        datas.messageList = response.data.message
+        datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
         console.log(datas.list.length)
       } else {
         datas.list = []
@@ -377,15 +412,15 @@ const destroyData = async (id) => {
                           <span
                             class="block text-sm text-gray-900 dark:text-neutral-500"
                           >
-                            Registrado:
+                            INGRESO:
                             {{ item.created_at != null ? item.created_at : '' }}
                           </span>
-                          <p
+                          <!-- <p
                             class="block text-sm text-gray-500 dark:text-neutral-500"
                           >
                             Detalle Registro:
                             {{ item.detalle != null ? item.detalle : '' }}
-                          </p>
+                          </p> -->
                           <span
                             class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
                           >
@@ -396,7 +431,7 @@ const destroyData = async (id) => {
                                 : 'SIN REGISTRO DE SALIDA'
                             }}
                           </span>
-                          <p
+                          <!-- <p
                             class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
                           >
                             Detalle Salida:
@@ -405,7 +440,7 @@ const destroyData = async (id) => {
                                 ? item.detalle_salida
                                 : ''
                             }}
-                          </p>
+                          </p> -->
                           <div class="py-1.5">
                             <a
                               class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium dark:text-blue-500"
@@ -440,6 +475,12 @@ const destroyData = async (id) => {
                             ? ''
                             : item.nroDocumento_residente
                         }}
+                      </span>
+                      <span
+                        class="block text-sm text-gray-500 dark:text-neutral-500"
+                      >
+                        Nro VIVIENDA:
+                        {{ item.nroVivienda == null ? '' : item.nroVivienda }}
                       </span>
                     </div>
                   </td>

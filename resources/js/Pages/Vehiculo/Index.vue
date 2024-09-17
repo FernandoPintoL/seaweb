@@ -244,7 +244,7 @@ const destroyData = async (id) => {
                       </div>
                     </th>
 
-                    <th class="px-6 py-3 text-start">
+                    <th class="px-3 py-3 text-start">
                       <div class="flex items-center gap-x-2">
                         <span
                           class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
@@ -253,7 +253,7 @@ const destroyData = async (id) => {
                         </span>
                       </div>
                     </th>
-                    <th class="px-6 py-3 text-start">
+                    <th class="px-3 py-3 text-start">
                       <div class="flex items-center gap-x-2">
                         <span
                           class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
@@ -262,16 +262,7 @@ const destroyData = async (id) => {
                         </span>
                       </div>
                     </th>
-                    <th class="px-6 py-3 text-start">
-                      <div class="flex items-center gap-x-2">
-                        <span
-                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                        >
-                          DETALLE
-                        </span>
-                      </div>
-                    </th>
-                    <th class="px-6 py-3 text-start">
+                    <th class="px-3 py-3 text-start">
                       <div class="flex items-center gap-x-2">
                         <span
                           class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
@@ -280,7 +271,7 @@ const destroyData = async (id) => {
                         </span>
                       </div>
                     </th>
-                    <th class="px-6 py-3 text-start">
+                    <th class="px-3 py-3 text-start">
                       <div class="flex items-center gap-x-2">
                         <span
                           class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
@@ -308,12 +299,11 @@ const destroyData = async (id) => {
                     <td
                       class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
                     >
-                      {{ item.tipo_vehiculo == null ? '' : item.tipo_vehiculo }}
-                    </td>
-                    <td
-                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                    >
-                      {{ item.detalle == null ? '' : item.detalle }}
+                      {{
+                        item.tipo_vehiculo == null
+                          ? ''
+                          : item.tipo_vehiculo.toUpperCase()
+                      }}
                     </td>
                     <td
                       class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"

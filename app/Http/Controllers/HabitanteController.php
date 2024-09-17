@@ -110,6 +110,7 @@ class HabitanteController extends Controller
                         ->join('viviendas as vd', 'h.vivienda_id', '=', 'vd.id')
                         ->skip(0)
                         ->take(20)
+                        ->orderBy('id', 'DESC')
                         ->get();
         return Inertia::render("Habitante/Index", ['listado'=> $responsse]);
     }

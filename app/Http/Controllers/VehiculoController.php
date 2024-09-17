@@ -90,7 +90,10 @@ class VehiculoController extends Controller
      */
     public function index()
     {
-        $listado = Vehiculo::all();
+        $listado = Vehiculo::skip(0)
+                    ->take(20)
+                    ->orderBy('id', 'DESC')
+                    ->get();
         return Inertia::render("Vehiculo/Index", ['listado'=> $listado]);
     }
 

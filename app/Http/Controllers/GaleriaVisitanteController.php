@@ -172,6 +172,7 @@ class GaleriaVisitanteController extends Controller
                     ->join('visitantes as v', 'gv.visitante_id', '=', 'v.id')
                     ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
                     ->groupBy('gv.id', 'v.id', 'p.id')
+                    ->orderBy('gv.id', 'DESC')
                     ->skip(0)
                     ->take(20)
                     ->get();
@@ -179,7 +180,9 @@ class GaleriaVisitanteController extends Controller
         $directorio = Storage::files( 'visitantes' );
         return Inertia::render("GaleriaVisitante/Index", [
             'listado'=> $listado,
-            'galeria' => $galeria]);
+            'galeria' => $galeria,
+            'directorio' => $directorio
+        ]);
 
     }
 
@@ -294,7 +297,8 @@ class GaleriaVisitanteController extends Controller
             // $directorio = Storage::files( 'visitantes' );
             $galeria = GaleriaVisitante::findOrFail( $id )->first();
             if ($galeria) {
-                $link = "https://sea-production-2d37.up.railway.app/storage/".$galeria->detalle;
+                // $link = "https://sea-production-2d37.up.railway.app/storage/".$galeria->detalle;
+                $link = $galeria->photo_path;
                 return response()->download($link);
             }else{
                 return response()->json([
@@ -322,45 +326,13 @@ class GaleriaVisitanteController extends Controller
         }
     }
 
-    public function descargarDBPath($id){
+    public function descargarDBPathDetalle($id){
         try{
             // $directorio = Storage::files( 'visitantes' );
             $galeria = GaleriaVisitante::findOrFail( $id )->first();
             if ($galeria) {
                 $link = public_path($galeria->detalle);
                 return response()->download($link);
-            }else{
-                return response()->json([
-                    "isRequest"=> true,
-                    "isSuccess" => false,
-                    "isMessageError" => true,
-                    "message" => "TRANSACCION INCORRECTA DIRECTORIO NO ENCONTRADO",
-                    "messageError" => "",
-                    "data" => [],
-                    "statusCode" => 423
-                ]);
-            }
-        }catch(\Exception $e){
-            $message = $e->getMessage();
-            $code = $e->getCode();
-            return response()->json([
-                "isRequest"=> true,
-                "isSuccess" => false,
-                "isMessageError" => true,
-                "message" => $message,
-                "messageError" => "",
-                "data" => [],
-                "statusCode" => $code
-            ]);
-        }
-    }
-
-    public function descargarDBPhotoPath($id){
-        try{
-            // $directorio = Storage::files( 'visitantes' );
-            $galeria = GaleriaVisitante::findOrFail( $id )->first();
-            if ($galeria) {
-                return response()->download($galeria->photo_path);
             }else{
                 return response()->json([
                     "isRequest"=> true,
