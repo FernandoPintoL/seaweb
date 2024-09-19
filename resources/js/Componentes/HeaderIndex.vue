@@ -16,7 +16,7 @@ const props = defineProps({
         {{ props.title }}
       </h2>
       <p class="text-sm text-gray-600 dark:text-neutral-400">
-        Agrega {{ props.title }}, edita y más.
+        Buscar, Agregar {{ props.title }} o Editar.
       </p>
     </div>
 

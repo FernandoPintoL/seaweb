@@ -8,6 +8,8 @@ use App\Http\Requests\UpdateViviendaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+
 
 class ViviendaController extends Controller
 {
@@ -16,23 +18,27 @@ class ViviendaController extends Controller
             $queryStr    = $request->get('query');
             $queryUpper = strtoupper($queryStr);
             if($request->get('skip') == null && $request->get('take') == null){
-                $responsse = Vivienda::where('nroVivienda','LIKE',"%".$queryUpper."%")
-                        ->with('tipoVivienda')
-                        ->with('condominio')
-                        ->orderBy('id', 'DESC')
-                        ->get();
+                $listado = DB::table('viviendas as v')
+                            ->select('v.id as id', 'v.*', 'c.razonSocial', 'tv.detalle')
+                            ->join('condominios as c', 'c.id','=','v.condominio_id')
+                            ->join('tipo_viviendas as tv', 'tv.id','=','v.tipo_vivienda_id')
+                            ->where('v.nroVivienda','=', $queryUpper)
+                            ->orWhere('c.razonSocial','=', $queryUpper)
+                            ->orWhere('tv.detalle','=', $queryUpper)
+                            ->get();
             }else{
                 $skip = $request->get('skip');
                 $take = $request->get('take');
-                $responsse = Vivienda::where('nroVivienda','LIKE',"%".$queryUpper."%")
-                        ->with('tipoVivienda')
-                        ->with('condominio')
-                        ->skip($skip)
-                        ->take($take)
-                        ->orderBy('id', 'DESC')
-                        ->get();
+                $listado = DB::table('viviendas as v')
+                            ->select('v.id as id', 'v.*', 'c.razonSocial', 'tv.detalle')
+                            ->join('condominios as c', 'c.id','=','v.condominio_id')
+                            ->join('tipo_viviendas as tv', 'tv.id','=','v.tipo_vivienda_id')
+                            ->skip($skip)
+                            ->take($take)
+                            ->orderBy('id', 'DESC')
+                            ->get();
             }
-            $cantidad = count( $responsse );
+            $cantidad = count( $listado );
             $str = strval($cantidad);
             return response()->json([
                 "isRequest"=> true,
@@ -40,7 +46,7 @@ class ViviendaController extends Controller
                 "isMessageError" => false,
                 "message" => "$str datos encontrados",
                 "messageError" => "",
-                "data" => $responsse,
+                "data" => $listado,
                 "statusCode" => 200
             ]);
         }catch(\Exception $e){
@@ -62,9 +68,12 @@ class ViviendaController extends Controller
      */
     public function index()
     {
-        $listado = Vivienda::with('tipoVivienda')
-                        ->with('condominio')
-                        ->get();
+        $listado = DB::table('viviendas as v')
+                            ->select('v.id as id', 'v.*', 'c.razonSocial', 'tv.detalle')
+                            ->join('condominios as c', 'c.id','=','v.condominio_id')
+                            ->join('tipo_viviendas as tv', 'tv.id','=','v.tipo_vivienda_id')
+                            ->orderBy('v.id', 'DESC')
+                            ->get();
         return Inertia::render("Vivienda/Index", ['listado'=> $listado]);
     }
 

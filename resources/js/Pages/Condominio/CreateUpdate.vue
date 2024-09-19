@@ -46,6 +46,7 @@ const form = useForm({
 
 const reactives = reactive({
   isLoad: false,
+  isPassword: true,
   list_typedocument: [],
   propietarioError: '',
   razonSocialError: '',
@@ -64,6 +65,7 @@ const sendModel = async () => {
     reactives.razonSocialError.length != 0 ||
     reactives.nroDocumentoError.length != 0 ||
     reactives.celularError.length != 0 ||
+    reactives.direccionError.length != 0 ||
     reactives.userNickError.length != 0 ||
     reactives.emailError.length != 0 ||
     reactives.passwordError.length != 0
@@ -111,7 +113,6 @@ const onValidatePropietario = (e) => {
 }
 
 const onValidateRazonSocial = (e) => {
-  console.log(e.target.value)
   if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{5,}$/.test(e.target.value)) {
     reactives.razonSocialError =
       'El campo debe tener al menos 5 caracteres y solo pueden ser letras.'
@@ -121,10 +122,19 @@ const onValidateRazonSocial = (e) => {
   }
 }
 
+const onValidateDireccion = (e) => {
+  if (e.target.value.length < 3) {
+    reactives.direccionError = 'El campo debe tener al menos 3 caracteres.'
+  } else {
+    reactives.direccionError = ''
+    form.direccion = e.target.value.toUpperCase()
+  }
+}
+
 const onValidateUserNick = (e) => {
   if (!/^[a-zA-Z0-9]{3,40}$/.test(e.target.value)) {
     reactives.userNickError =
-      'El campo debe tener un minimo de 3 caracteres y un maximo de 10 caracteres solo letras y números'
+      'El campo debe tener un minimo de 3 caracteres y un maximo de 10 caracteres solo letras y números, sin tildes'
   } else {
     reactives.userNickError = ''
   }
@@ -151,7 +161,7 @@ const onValidatePassword = (e) => {
 const onValidateCelular = (e) => {
   if (!/^(?:[678]\d{7})?$/.test(e.target.value)) {
     reactives.celularError =
-      'El campo debe tener al menos 7 caracteres y solo pueden ser números y (+).'
+      'El campo debe tener al menos 7 caracteres y solo pueden ser números.'
   } else {
     reactives.celularError = ''
   }
@@ -160,7 +170,7 @@ const onValidateCelular = (e) => {
 const onValidateNroDocumento = (e) => {
   if (!/^\d{4,15}[a-zA-Z]{0,4}$/.test(e.target.value)) {
     reactives.nroDocumentoError =
-      'El campo debe tener solo numeros, puede contener 1 solo (-) y umn minimo de 2 letras.'
+      'El campo debe tener solo numeros, y/o complemento'
   } else {
     reactives.nroDocumentoError = ''
     form.perfil.nroDocumento = e.target.value
@@ -281,6 +291,10 @@ const updateInformation = async () => {
 const fecha = (fechaData) => {
   return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM a')
 }
+
+const changeInputPassword = () => {
+  reactives.isPassword = !reactives.isPassword
+}
 </script>
 
 <template>
@@ -325,7 +339,7 @@ const fecha = (fechaData) => {
             for="propietario"
             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Propietario
+            Nombre
           </label>
           <div class="flex">
             <span
@@ -362,7 +376,6 @@ const fecha = (fechaData) => {
             <input
               v-model="form.razonSocial"
               @input="onValidateRazonSocial"
-              required
               type="text"
               id="razonSocial"
               class="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -387,7 +400,6 @@ const fecha = (fechaData) => {
             <input
               v-model="form.nit"
               @input="onValidateNroDocumento"
-              required
               type="text"
               id="nroDocumento"
               class="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -402,7 +414,7 @@ const fecha = (fechaData) => {
             for="celular"
             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Celular
+            Telefono
           </label>
           <div class="flex">
             <span
@@ -416,7 +428,7 @@ const fecha = (fechaData) => {
               type="tel"
               id="celular"
               class="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="+59173682145"
+              placeholder="73682145"
             />
           </div>
           <InputError class="mt-2" :message="reactives.celularError" />
@@ -438,12 +450,14 @@ const fecha = (fechaData) => {
             <input
               v-model="form.perfil.direccion"
               required
+              @input="onValidateDireccion"
               type="text"
               id="direccion"
               class="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Bonnie Green"
             />
           </div>
+          <InputError class="mt-2" :message="reactives.direccionError" />
           <!-- <InputError
               class="mt-2"
               :message="reactives.nameError.toUpperCase()"
@@ -519,15 +533,19 @@ const fecha = (fechaData) => {
           </label>
           <div class="flex">
             <span
+              @click="changeInputPassword"
               class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-e-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600"
             >
-              <i class="fa-solid fa-eye"></i>
+              <i
+                :class="reactives.isPassword ? 'fa-eye' : 'fa-eye-slash'"
+                class="fa-solid"
+              ></i>
             </span>
             <input
               v-model="form.user.password"
               @input="onValidatePassword"
               name="password"
-              type="password"
+              :type="reactives.isPassword ? 'password' : 'text'"
               required
               class="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Ingrese password"

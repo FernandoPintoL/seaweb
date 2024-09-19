@@ -107,16 +107,13 @@ Route::middleware([
     Route::post('/galeriavisitante/visitante',[GaleriaVisitanteController::class, 'getGaleriaVisitante'])->name('galeriavisitante.getGaleriaVisitante');
     Route::post('/galeriavisitante/uploadimage', [GaleriaVisitanteController::class,'uploadimage'])->name('galeriavisitante.uploadimage');
     Route::get('/galeriavisitante/descargar/{id}',[GaleriaVisitanteController::class, 'descargar'])->name('galeriavisitante.des');
-    Route::get('/galeriavisitante/descargardbpathdetalle/{id}',[GaleriaVisitanteController::class, 'descargarDBPathDetalle'])->name('galeriavisitante.descargardbphotopath');
+    Route::get('/galeriavisitante/descargardbpath/{id}',[GaleriaVisitanteController::class, 'descargarDBPath'])->name('galeriavisitante.descargardbpath');
+    Route::get('/galeriavisitante/descargardbphotopath/{id}',[GaleriaVisitanteController::class, 'descargarDBPhotoPath'])->name('galeriavisitante.descargardbphotopath');
     Route::get('/galeriavisitante/descargardirectoriopath/{id}',[GaleriaVisitanteController::class, 'descargarDirectorioPath'])->name('galeriavisitante.descargardirectoriopath');
     Route::get('/galeriavisitante/descargardirectoriourl/{id}',[GaleriaVisitanteController::class, 'descargarDirectorioUrl'])->name('galeriavisitante.descargarDirectorioUrl');
 
     /* GALERIA VEHICULO */
     Route::resource('/galeriavehiculo', GaleriaVehiculoController::class);
-    Route::get('/galeriavehiculo/descargar/{id}',[GaleriaVehiculoController::class, 'descargar'])->name('galeriavehiculo.des');
-    Route::get('/galeriavehiculo/descargardbpathdetalle/{id}',[GaleriaVehiculoController::class, 'descargarDBPathDetalle'])->name('galeriavehiculo.descargardbphotopath');
-    Route::get('/galeriavehiculo/descargardirectoriopath/{id}',[GaleriaVehiculoController::class, 'descargarDirectorioPath'])->name('galeriavehiculo.descargardirectoriopath');
-    Route::get('/galeriavehiculo/descargardirectoriourl/{id}',[GaleriaVehiculoController::class, 'descargarDirectorioUrl'])->name('galeriavehiculo.descargarDirectorioUrl');
 
     /* ACTUALIZAR INFORMACION DE USUARIO*/
     Route::put('/user/updateinformacion/{user}',[UserController::class, 'updateInformacion'])->name('user.updateinformacion');

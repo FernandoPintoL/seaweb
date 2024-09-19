@@ -42,20 +42,37 @@ const recargarPagina = () => {
 const onSearchQuery = (e) => {
   console.log('valor del query')
   console.log(query.value.length)
+  datas.dateStart = ''
+  datas.dateEnd = ''
   queryList(e.target.value)
 }
 
 const onSearchDate = () => {
   console.log(datas.dateStart)
   console.log(datas.dateEnd)
+  query.value = ''
   if (datas.dateStart.length > 0 && datas.dateEnd.length > 0) {
-    var start = fecha(datas.dateStart)
-    var end = fecha(datas.dateEnd)
-    console.log(start)
-    console.log(end)
-    queryDateList(start, end)
+    const start = moment(datas.dateStart)
+    const end = moment(datas.dateEnd)
+    if (start.isBefore(end)) {
+      console.log(datas.dateStart)
+      console.log(datas.dateEnd)
+      queryDateList(datas.dateStart, datas.dateEnd)
+      //   queryDateList(start, end)
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Fecha no valida',
+        icon: 'error',
+      })
+    }
   } else {
-    queryList('')
+    Swal.fire({
+      title: 'Error!',
+      text: 'Se necesita registrar fechas',
+      icon: 'error',
+    })
+    queryListSaltoTake('', 0, 20)
   }
 }
 
@@ -111,6 +128,11 @@ const queryListSaltoTake = async (consulta, skip, take) => {
     .catch((error) => {
       console.log('respuesta error')
       console.log(error)
+      Swal.fire({
+        title: 'Algun otro error esta sucediendo!',
+        text: error,
+        icon: 'error',
+      })
     })
   datas.isLoad = false
 }
@@ -141,7 +163,7 @@ const queryList = async (consulta) => {
 }
 
 const fecha = (fechaData) => {
-  return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM a')
+  return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM')
 }
 
 const destroyData = async (id) => {
