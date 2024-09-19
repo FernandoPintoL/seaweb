@@ -22,9 +22,9 @@ class ViviendaController extends Controller
                             ->select('v.id as id', 'v.*', 'c.razonSocial', 'tv.detalle')
                             ->join('condominios as c', 'c.id','=','v.condominio_id')
                             ->join('tipo_viviendas as tv', 'tv.id','=','v.tipo_vivienda_id')
-                            ->where('v.nroVivienda','=', $queryUpper)
-                            ->orWhere('c.razonSocial','=', $queryUpper)
-                            ->orWhere('tv.detalle','=', $queryUpper)
+                            ->where('v.nroVivienda','LIKE', '%'.$queryUpper.'%')
+                            ->orWhere('c.razonSocial','LIKE', '%'.$queryUpper.'%')
+                            ->orWhere('tv.detalle','LIKE', '%'.$queryUpper.'%')
                             ->get();
             }else{
                 $skip = $request->get('skip');
