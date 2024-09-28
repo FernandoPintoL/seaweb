@@ -74,11 +74,45 @@ class CondominioController extends Controller
     public function store(StoreCondominioRequest $request)
     {
         try{
+            if($request->get('razonSocial') != null){
+                $validator = Validator::make($request->all(), [
+                                'razonSocial' => ['unique:condominios']
+                            ]);
+                if ($validator->fails()) {
+                    return response()->json( [
+                        "isRequest" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
+                        "message" => $validator->errors(),
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
+                    ], 422 );
+                }
+            }
+
+            if($request->get('nit') != null){
+                $validator = Validator::make($request->all(), [
+                                'nit' => ['unique:condominios'],
+                            ]);
+                if ($validator->fails()) {
+                    return response()->json( [
+                        "isRequest" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
+                        "message" => $validator->errors(),
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
+                    ], 422 );
+                }
+            }
+
             $perfilRequest = $request->perfil;
             $userRequest   = $request->user;
+
             $validatorPerfil = Validator::make($perfilRequest, [
-                                'email' => ['unique:perfils'],
-                                'nroDocumento' => ['unique:perfils']
+                                'email' => ['unique:perfils']
                             ]);
             if ($validatorPerfil->fails()) {
                 return response()->json( [

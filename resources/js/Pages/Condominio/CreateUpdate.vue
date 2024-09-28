@@ -62,9 +62,6 @@ const reactives = reactive({
 const sendModel = async () => {
   if (
     reactives.propietarioError.length != 0 ||
-    reactives.razonSocialError.length != 0 ||
-    reactives.nroDocumentoError.length != 0 ||
-    reactives.celularError.length != 0 ||
     reactives.direccionError.length != 0 ||
     reactives.userNickError.length != 0 ||
     reactives.emailError.length != 0 ||
@@ -79,6 +76,13 @@ const sendModel = async () => {
     })
     return
   }
+
+  /*if (form.razonSocial.length == 0) form.razonSocial = null
+  if (form.nit == null || form.nit.length == 0) {
+    form.nit = null
+    form.perfil.nroDocumento = null
+  }*/
+
   Swal.fire({
     title: 'Estas seguro de registrar esta información?',
     text: '',
@@ -89,6 +93,7 @@ const sendModel = async () => {
     confirmButtonText: 'Si, estoy seguro!',
   }).then((result) => {
     if (result.isConfirmed) {
+      console.log(form)
       reactives.isLoad = true
       if (props.model != null) {
         updateInformation()
@@ -113,7 +118,7 @@ const onValidatePropietario = (e) => {
 }
 
 const onValidateRazonSocial = (e) => {
-  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{5,}$/.test(e.target.value)) {
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]{0,}$/.test(e.target.value)) {
     reactives.razonSocialError =
       'El campo debe tener al menos 5 caracteres y solo pueden ser letras.'
   } else {
@@ -168,13 +173,19 @@ const onValidateCelular = (e) => {
 }
 
 const onValidateNroDocumento = (e) => {
-  if (!/^\d{4,15}[a-zA-Z]{0,4}$/.test(e.target.value)) {
+  if (!/^\d{0,15}[a-zA-Z]{0,4}$/.test(e.target.value)) {
     reactives.nroDocumentoError =
-      'El campo debe tener solo numeros, y/o complemento'
+      'El campo debe tener solo números, y/o complemento'
   } else {
     reactives.nroDocumentoError = ''
     form.perfil.nroDocumento = e.target.value
+    form.nit = e.target.value
   }
+}
+
+const setErrorPropietario = (value) => {
+  console.log(value)
+  reactives.propietarioError = value
 }
 
 const setErrorNroDocumento = (value) => {
@@ -203,7 +214,7 @@ const createInformacion = async () => {
   await axios
     .post(url)
     .then((response) => {
-      console.log(response)
+      console.log(response.data)
       Swal.fire({
         position: 'top-end',
         icon: response.data.isSuccess ? 'success' : 'error',
@@ -225,6 +236,11 @@ const createInformacion = async () => {
         timer: 1500,
       })
       if (error.response.data.isMessageError) {
+        if (error.response.data.message.propietario != null) {
+          setErrorPropietario(error.response.data.message.propietario[0])
+        } else {
+          setErrorPropietario('')
+        }
         if (error.response.data.message.razonSocial != null) {
           setErrorRazonSocial(error.response.data.message.razonSocial[0])
         } else {
@@ -232,6 +248,11 @@ const createInformacion = async () => {
         }
         if (error.response.data.message.nroDocumento != null) {
           setErrorNroDocumento(error.response.data.message.nroDocumento[0])
+        } else {
+          setErrorNroDocumento('')
+        }
+        if (error.response.data.message.nit != null) {
+          setErrorNroDocumento(error.response.data.message.nit[0])
         } else {
           setErrorNroDocumento('')
         }
@@ -339,7 +360,7 @@ const changeInputPassword = () => {
             for="propietario"
             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Nombre
+            Nombre(*)
           </label>
           <div class="flex">
             <span
@@ -358,6 +379,36 @@ const changeInputPassword = () => {
             />
           </div>
           <InputError class="mt-2" :message="reactives.propietarioError" />
+        </div>
+        <!-- DIRECCION -->
+        <div class="col-span-12 sm:col-span-12">
+          <label
+            for="direccion"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
+            Dirección(*)
+          </label>
+          <div class="flex">
+            <span
+              class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-e-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600"
+            >
+              <i class="fa-solid fa-location-dot"></i>
+            </span>
+            <input
+              v-model="form.perfil.direccion"
+              required
+              @input="onValidateDireccion"
+              type="text"
+              id="direccion"
+              class="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Bonnie Green"
+            />
+          </div>
+          <InputError class="mt-2" :message="reactives.direccionError" />
+          <!-- <InputError
+              class="mt-2"
+              :message="reactives.nameError.toUpperCase()"
+            /> -->
         </div>
         <!-- RAZON SOCIAL -->
         <div class="col-span-12 sm:col-span-12">
@@ -384,6 +435,7 @@ const changeInputPassword = () => {
           </div>
           <InputError class="mt-2" :message="reactives.razonSocialError" />
         </div>
+        <!-- NRO DE DOCUMENTO -->
         <div class="col-span-12 sm:col-span-12">
           <label
             for="nroDocumento"
@@ -433,36 +485,7 @@ const changeInputPassword = () => {
           </div>
           <InputError class="mt-2" :message="reactives.celularError" />
         </div>
-        <!-- DIRECCION -->
-        <div class="col-span-12 sm:col-span-12">
-          <label
-            for="direccion"
-            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Dirección
-          </label>
-          <div class="flex">
-            <span
-              class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-e-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600"
-            >
-              <i class="fa-solid fa-location-dot"></i>
-            </span>
-            <input
-              v-model="form.perfil.direccion"
-              required
-              @input="onValidateDireccion"
-              type="text"
-              id="direccion"
-              class="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder="Bonnie Green"
-            />
-          </div>
-          <InputError class="mt-2" :message="reactives.direccionError" />
-          <!-- <InputError
-              class="mt-2"
-              :message="reactives.nameError.toUpperCase()"
-            /> -->
-        </div>
+
         <!-- DATOS DE INICIO  -->
         <div v-if="props.model == null" class="col-span-12 sm:col-span-12">
           <div class="hidden sm:block">
@@ -478,7 +501,7 @@ const changeInputPassword = () => {
             for="usernick"
             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            UserNick
+            UserNick(*)
           </label>
           <div class="flex">
             <span
@@ -504,7 +527,7 @@ const changeInputPassword = () => {
             for="email"
             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Email
+            Email(*)
           </label>
           <div class="flex">
             <span
@@ -529,7 +552,7 @@ const changeInputPassword = () => {
             for="password"
             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
           >
-            Password
+            Password(*)
           </label>
           <div class="flex">
             <span
