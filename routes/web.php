@@ -15,7 +15,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehiculoController;
 use App\Http\Controllers\ViviendaController;
 use App\Http\Controllers\IngresoController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\RolesController;
+use App\Http\Controllers\PermissionsController;
 use Illuminate\Support\Facades\DB;
 
 
@@ -117,4 +118,17 @@ Route::middleware([
 
     /* ACTUALIZAR INFORMACION DE USUARIO*/
     Route::put('/user/updateinformacion/{user}',[UserController::class, 'updateInformacion'])->name('user.updateinformacion');
+
+    /* USUARIOS */
+    Route::resource( '/users', UserController::class);
+    Route::post('/users/query',[UserController::class, 'query'])->name('users.query');
+
+    /* ROLES */
+    Route::resource( '/roles', RolesController::class);
+    Route::post('/roles/query',[RolesController::class, 'query'])->name('roles.query');
+
+
+    /* PRIVILEGIOS */
+    Route::resource( '/permissions', PermissionsController::class);
+    Route::post('/permissions/query',[PermissionsController::class, 'query'])->name('permissions.query');
 });

@@ -38,6 +38,8 @@ class DatabaseSeeder extends Seeder
             TipoViviendaSeeder::class,
             TipoVisitaSeeder::class,
             CondominioSeeder::class,
+            PermissionsSeeder::class,
+            RolesSeeder::class,
             // ViviendaSeeder::class,
             // HabitanteSeeder::class,
             // VisitanteSeeder::class,

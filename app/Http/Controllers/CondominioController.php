@@ -149,6 +149,8 @@ class CondominioController extends Controller
                 'created_at' => $request->created_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->created_at,
                 'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
             ]);
+            $user->assignRole(['CONDOMINIO']);
+
             $responsse = Condominio::create([
                 'propietario' => $condominio['propietario'],
                 'razonSocial' => $condominio['razonSocial'],

@@ -3,11 +3,10 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Laravel\Jetstream\Jetstream;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Validation\Rules\Password;
-class StoreUserRequest extends FormRequest
+
+class UpdateUserRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,9 +26,7 @@ class StoreUserRequest extends FormRequest
         return [
             'name' => ['required','unique:users'],
             'email' => ['required', 'email', 'unique:users'],
-            'usernick' => ['required', 'unique:users'],
-            'password' => ['required', Password::default(), 'confirmed'],
-            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+            'usernick' => ['required', 'unique:users']
         ];
     }
 
@@ -42,8 +39,6 @@ class StoreUserRequest extends FormRequest
             'email.unique' => 'El :attribute esta siendo usado.',
             'usernick.required' => 'El :attribute es obligatorio.',
             'usernick.unique' => 'El :attribute esta siendo usado.',
-            'password.required' => ' :attribute es obligatorio.',
-            'password.confirmed' => ' :attribute no esta confirmado.',
         ];
     }
     protected function failedValidation(Validator $validator){

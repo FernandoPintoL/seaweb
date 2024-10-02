@@ -1,5 +1,8 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3'
+const logout = () => {
+  router.post(route('logout'))
+}
 </script>
 <template>
   <header
