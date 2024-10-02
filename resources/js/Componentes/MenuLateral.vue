@@ -61,6 +61,15 @@ const logout = () => {
                 Inicio
               </a>
             </li>
+            <li>
+              <a
+                class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-none focus:bg-gray-100 dark:bg-neutral-700 dark:text-white"
+                :href="route('profile.show')"
+              >
+                <i class="fa-solid fa-address-card"></i>
+                Perfil
+              </a>
+            </li>
             <li
               v-if="
                 $page.props.user.roles.includes('super-admin') ||
