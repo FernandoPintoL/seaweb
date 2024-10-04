@@ -254,9 +254,14 @@ const fecha = (fechaData) => {
 </script>
 
 <template>
-  <AppLayout title="Craear Visitante">
+  <AppLayout title="Crear Visitante">
     <div class="w-full mr-4" v-show="props.model != null">
       <button
+        v-if="
+                $page.props.user.roles.includes('super-admin') ||
+    $page.props.user.roles.includes('GALERIA_VISITANTE.LISTAR') ||
+                $page.props.user.roles.includes('GALERIA_VISITANTE.MOSTRAR')
+              "
         type="button"
         @click="changeShowGaleria"
         :class="
