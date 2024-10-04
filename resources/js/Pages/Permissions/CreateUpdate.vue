@@ -72,7 +72,7 @@ const sendModel = async () => {
 }
 
 const onValidateName = (e) => {
-  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ.-/_* ]{2,}$/.test(e.target.value)) {
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ_*-/ ]{2,}$/.test(e.target.value)) {
     reactives.nameError =
       'El campo debe tener al menos 2 caracteres y solo pueden ser letras.'
   } else {
