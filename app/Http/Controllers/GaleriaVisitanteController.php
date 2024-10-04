@@ -264,8 +264,8 @@ class GaleriaVisitanteController extends Controller
             $existe = Storage::disk( 'public' )->exists( $appgaleriaVisitante->detalle );
             if ($existe) {
                 Storage::disk('public')->delete($appgaleriaVisitante->detalle);
-                $responseData = $appgaleriaVisitante->delete();
             }
+            $responseData = $appgaleriaVisitante->delete();
 
             return response()->json([
                 "isRequest"=> true,

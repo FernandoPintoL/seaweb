@@ -7,6 +7,8 @@ import FormSection from '@/Components/FormSection.vue'
 import PrimaryButton from '@/Components/PrimaryButton.vue'
 import Loader from '@/Componentes/Loader.vue'
 import moment from 'moment-timezone'
+import 'moment/locale/es';
+
 
 const Swal = inject('$swal')
 
@@ -34,10 +36,16 @@ const form = useForm({
   vehiculo_id: props.model != null ? props.model.vehiculo_id : 0,
   tipo_visita_id: props.model != null ? props.model.tipo_visita_id : 0,
   user_id: props.model != null ? props.model.user_id : 0,
+    salida_created_at: null,
+  created_at: null,
 })
 
 onMounted(() => {
-  if (props.model != null) {
+    if (props.model != null) {
+    /* console.log(form.salida_created_at)
+        console.log(fechaData(form.salida_created_at))
+        form.salida_created_at = fechaData(props.model.salida_created_at)
+        form.created_at = fechaData(props.model.created_at) */
     reactives.ingreso_vehiculo = props.model.vehiculo_id != null
   }
   reactives.isLoad = true
@@ -118,7 +126,8 @@ const setErrorPlaca = (value) => {
 }
 
 const createInformacion = async () => {
-  const url = route('ingreso.store', form)
+    const url = route('ingreso.store', form)
+  console.log(form)
   await axios
     .post(url)
     .then((response) => {
@@ -167,7 +176,8 @@ const createInformacion = async () => {
 }
 
 const updateInformation = async () => {
-  const url = route('ingreso.updateIngreso', props.model.id)
+    const url = route('ingreso.updateIngreso', props.model.id)
+  console.log(form)
   await axios
     .put(url, form)
     .then((response) => {
@@ -295,7 +305,15 @@ const queryTipoVisitas = async (consulta) => {
 }
 
 const fecha = (fechaData) => {
-  return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM a')
+  return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM')
+}
+
+const fechaData = (fechaData) => {
+  return moment(fechaData).format('YYYY-MM-DD HH:MM')
+}
+
+const now = () => {
+  return moment().format()
 }
 </script>
 
@@ -327,11 +345,7 @@ const fecha = (fechaData) => {
             <span class="font-semibold text-gray-800 leading-tight">
               Creado:
             </span>
-            {{
-              props.model.created_at == null
-                ? ''
-                : fecha(props.model.created_at)
-            }}
+            {{ props.model.created_at == null ? '' : props.model.created_at }}
           </p>
           <p>
             <span class="font-semibold text-gray-800 leading-tight">
@@ -583,10 +597,38 @@ const fecha = (fechaData) => {
             rows="4"
             class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           ></textarea>
-          <!-- <InputError
-              class="mt-2"
-              :message="reactives.detalleError.toUpperCase()"
-            /> -->
+        </div>
+
+        <!-- Fecha Creacion -->
+        <div class="col-span-12 sm:col-span-12" v-if="!props.isRegister">
+          <label
+            for="fecha_salida"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
+            Fecha Creacion
+          </label>
+          <input
+            id="fecha_salida"
+            type="datetime-local"
+            v-model="form.created_at"
+            class="py-2 px-2 pe-11 block w-full border-gray-200 sm:shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+          />
+        </div>
+
+        <!-- Fecha Salida -->
+        <div class="col-span-12 sm:col-span-12" v-if="!props.isRegister">
+          <label
+            for="fecha_salida"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
+            Fecha Salida
+          </label>
+          <input
+            id="fecha_salida"
+            type="datetime-local"
+            v-model="form.salida_created_at"
+            class="py-2 px-2 pe-11 block w-full border-gray-200 sm:shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+          />
         </div>
       </template>
 

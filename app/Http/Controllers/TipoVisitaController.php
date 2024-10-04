@@ -182,6 +182,29 @@ class TipoVisitaController extends Controller
      */
     public function destroy(TipoVisita $tipovisitum)
     {
-        //
+        try{
+            $response = $tipovisitum->delete();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => $response,
+                "isMessageError" => !$response,
+                "message" => $response ? "Datos eliminados correctamente" : "Los datos no pudieron ser eliminados",
+                "messageError" => "",
+                "data" => $response,
+                "statusCode" => 200
+            ]);
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
     }
 }

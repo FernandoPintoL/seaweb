@@ -11,6 +11,8 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
 
 class VisitanteController extends Controller
 {
@@ -402,29 +404,27 @@ class VisitanteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Visitante $appvisitante)
+    public function destroy(Visitante $visitante)
     {
         try{
-            /* return response()->json([
-                "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Verificacion",
-                "data" => $appvisitante
-            ]); */
-            $id       = $appvisitante->perfil_id;
-            $response = $appvisitante->delete();
-            $model = Perfil::findOrFail($id);
-            $response = $model->delete();
-            //$model = Visitante::findOrFail($appvisitante->id);
-            //$response = $model->delete();
+            $galerias = GaleriaVisitante::where('visitante_id','=',$visitante->id)->get();
+            foreach($galerias as $galeria){
+                $existe = Storage::disk( 'public' )->exists( $galeria->detalle );
+            if ($existe) {
+                Storage::disk('public')->delete($galeria->detalle);
+            }
+                $responseData = $galeria->delete();
+            }
+            $response = $visitante->delete();
+            $delete_perfil = $visitante->perfil->delete();
+
             return response()->json([
                 "isRequest"=> true,
                 "isSuccess" => $response,
                 "isMessageError" => !$response,
                 "message" => $response != null ? "Eliminado Correctamente" : "Error!!!",
                 "messageError" => "",
-                "data" => $model,
+                "data" => [],
                 "statusCode" => 200
             ]);
         }catch(\Exception $e){

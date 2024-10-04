@@ -8,6 +8,7 @@ use App\Http\Requests\StoreVehiculoRequest;
 use App\Http\Requests\UpdateVehiculoRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class VehiculoController extends Controller
@@ -241,17 +242,26 @@ class VehiculoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Vehiculo $appvehiculo)
+    public function destroy(Vehiculo $vehiculo)
     {
         try{
-            $responsse = $appvehiculo->delete();
+            $galerias = GaleriaVehiculo::where('vehiculo_id','=',$vehiculo->id)->get();
+            foreach($galerias as $galeria){
+                $existe = Storage::disk( 'public' )->exists( $galeria->detalle );
+            if ($existe) {
+                Storage::disk('public')->delete($galeria->detalle);
+            }
+                $responseData = $galeria->delete();
+            }
+            $response = $vehiculo->delete();
+
             return response()->json([
                 "isRequest"=> true,
-                "isSuccess" => $responsse != null,
-                "isMessageError" => $responsse != null,
-                "message" => $responsse != null ? "Transacción correcta" : "Error!!!",
+                "isSuccess" => $response,
+                "isMessageError" => !$response,
+                "message" => $response != null ? "Eliminado Correctamente" : "Error!!!",
                 "messageError" => "",
-                "data" => $responsse,
+                "data" => [],
                 "statusCode" => 200
             ]);
         }catch(\Exception $e){

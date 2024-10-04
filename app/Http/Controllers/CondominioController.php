@@ -299,6 +299,31 @@ class CondominioController extends Controller
      */
     public function destroy(Condominio $condominio)
     {
-        //
+        try{
+            $responseData  = $condominio->delete();
+            $delete_user = $condominio->user->delete();
+            $delete_perfil = $condominio->perfil->delete();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => $responseData != 0 && $responseData != null,
+                "isMessageError" => !$responseData != 0 || $responseData == null,
+                "message" => $responseData != 0 && $responseData != null? "TRANSACCION CORRECTA": "TRANSACCION INCORRECTA",
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => 200
+            ]);
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
     }
 }

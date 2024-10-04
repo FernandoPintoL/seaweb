@@ -348,7 +348,10 @@ class IngresoController extends Controller
                 'vehiculo_id'=> $request->vehiculo_id != 0 ? $request->vehiculo_id : null,  ///FK
                 'tipo_visita_id' => $request->tipo_visita_id, ///FK
                 'user_id' => $request->user_id,
-                'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
+                'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at,
+                'created_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at,
+                'salida_created_at' => $request->salida_created_at == null ? null : $request->salida_created_at,
+
             ]);
             return response()->json([
                 "isRequest"=> true,
@@ -387,7 +390,9 @@ class IngresoController extends Controller
                 'autoriza_habitante_id'=> $request->autoriza_habitante_id,
                 'vehiculo_id'=> $request->vehiculo_id != 0 ? $request->vehiculo_id : null,  ///FK
                 'tipo_visita_id' => $request->tipo_visita_id, ///FK
-                'updated_at' => $request->updated_at
+                'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at,
+                'created_at' => $request->created_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->created_at,
+                'salida_created_at' => $request->salida_created_at == null ? null : $request->salida_created_at,
                 //'user_id' => $request->user_id == 0 ? auth()->user()->id : $request->user_id,
             ]);
             return response()->json([
@@ -417,8 +422,31 @@ class IngresoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Ingreso $appingreso)
+    public function destroy(Ingreso $ingreso)
     {
-        //
+        try{
+            $responseData  = $ingreso->delete();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => $responseData != 0 && $responseData != null,
+                "isMessageError" => !$responseData != 0 || $responseData == null,
+                "message" => $responseData != 0 && $responseData != null? "TRANSACCION CORRECTA": "TRANSACCION INCORRECTA",
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => 200
+            ]);
+        }catch(\Exception $e){
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest"=> true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => "",
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
     }
 }

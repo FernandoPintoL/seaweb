@@ -7,21 +7,28 @@ import PrimaryButton from '@/Components/PrimaryButton.vue'
 import InputError from '@/Components/InputError.vue'
 import Loader from '@/Componentes/Loader.vue'
 import moment from 'moment-timezone'
+import SectionBorder from '@/Components/SectionBorder.vue'
 
 const Swal = inject('$swal')
 
 const props = defineProps({
   model: Object,
+  permissions: Object,
+  model_permissions: Object,
 })
 
 onMounted(() => {
-  // queryDocument('')
+  reactives.permisos = props.permissions
+  if (props.model != null) {
+    form.permissions = props.model_permissions
+  }
 })
 
 const form = useForm({
   id: props.model != null ? props.model.id : '',
   name: props.model != null ? props.model.name : '',
   guard_name: props.model != null ? props.model.guard_name : '',
+  permissions: props.model != null ? props.model_permissions : [],
 })
 
 const reactives = reactive({
@@ -29,6 +36,7 @@ const reactives = reactive({
   isPassword: true,
   list_typedocument: [],
   nameError: '',
+  permisos: [],
 })
 
 const sendModel = async () => {
@@ -221,6 +229,32 @@ const changeInputPassword = () => {
             />
           </div>
           <InputError class="mt-2" :message="reactives.nameError" />
+        </div>
+
+        <div class="col-span-12 sm:col-span-12">
+          <SectionBorder />
+          <h3 class="mb-4 font-semibold text-gray-900 dark:text-white">
+            Permisos
+          </h3>
+          <div class="grid grid-cols-2 gap-2">
+            <div v-for="item in reactives.permisos" :key="item.id">
+              <label
+                :for="item.name + '-' + item.id"
+                class="flex p-3 w-full bg-white border border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400"
+              >
+                <span class="text-sm text-gray-500 dark:text-neutral-400">
+                  {{ item.name }}
+                </span>
+                <input
+                  type="checkbox"
+                  v-model="form.permissions"
+                  class="shrink-0 ms-auto mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                  :id="item.name + '-' + item.id"
+                  :value="item.name"
+                />
+              </label>
+            </div>
+          </div>
         </div>
       </template>
 

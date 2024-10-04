@@ -82,6 +82,12 @@ class PermissionsSeeder extends Seeder
         $mostrar = Permission::create(['name' => 'TIPO_VISITA.MOSTRAR']);
         $listar = Permission::create(['name' => 'TIPO_VISITA.LISTAR']);
 
+        //TIPO VIVIENDA
+        $crear = Permission::create(['name' => 'TIPO_VIVIENDA.CREAR']);
+        $editar = Permission::create(['name' => 'TIPO_VIVIENDA.EDITAR']);
+        $eliminar = Permission::create(['name' => 'TIPO_VIVIENDA.ELIMINAR']);
+        $mostrar = Permission::create(['name' => 'TIPO_VIVIENDA.MOSTRAR']);
+        $listar = Permission::create(['name' => 'TIPO_VIVIENDA.LISTAR']);
 
         //VEHICULOS
         $crear = Permission::create(['name' => 'VEHICULO.CREAR']);

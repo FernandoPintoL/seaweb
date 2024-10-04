@@ -166,34 +166,57 @@ const fecha = (fechaData) => {
   return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM')
 }
 
+const destroyMessage = (id) => {
+  Swal.fire({
+    title: 'Estas seguro de eliminar esta información?',
+    text: '',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Si, estoy seguro!',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      datas.isLoad = true
+      destroyData(id)
+      datas.isLoad = false
+    }
+  })
+}
+
 const destroyData = async (id) => {
   const url = route('ingreso.destroy', id)
   await axios
     .delete(url)
     .then((response) => {
+      console.log(response)
+      console.log(response.data.message)
       Swal.fire({
         title: response.data.isSuccess ? 'Buen Trabajo!' : 'Error!',
-        text: response.data.isSuccess
-          ? 'Dato creado exitosamente'
-          : 'Algún error inesperado',
+        text:
+          response.data.statusCode == 23503
+            ? 'ESTE RESIDENTE ESTA SIENDO USADO EN OTRAS TABLAS'
+            : response.data.message,
         icon: response.data.isSuccess ? 'success' : 'error',
       })
+      if (response.data.isSuccess) {
+        queryListSaltoTake('', 0, 10)
+      }
     })
     .catch((error) => {
-      if (error.isMessageError) {
+      if (error.response.data.isMessageError) {
         console.log(error.message)
         Swal.fire({
-          title: error.isMessageError
+          title: error.response.data.isMessageError
             ? 'Error desde el micro servicio!'
             : 'Algun otro error esta sucediendo!',
-          text: error.isMessageError
+          text: error.response.data.isMessageError
             ? 'Algunos datos fueron mal registrados'
             : 'Algun otro tipo de error sucedio',
-          icon: error.isMessageError ? 'error' : 'success',
+          icon: 'error',
         })
       }
     })
-  queryList('')
 }
 </script>
 <template>
@@ -204,6 +227,10 @@ const destroyData = async (id) => {
     <HeaderIndex :title="'Ingresos'">
       <template #link>
         <a
+          v-if="
+            $page.props.user.roles.includes('super-admin') ||
+            $page.props.user.permissions.includes('INGRESO.CREAR')
+          "
           class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
           :href="route('ingreso.create')"
         >
@@ -357,6 +384,15 @@ const destroyData = async (id) => {
                         class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
                       >
                         VISITANTE
+                      </span>
+                    </div>
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-start">
+                    <div class="flex items-center gap-x-2">
+                      <span
+                        class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
+                      >
+                        _
                       </span>
                     </div>
                   </th>
@@ -527,6 +563,37 @@ const destroyData = async (id) => {
                             : item.nroDocumento_visitante
                         }}
                       </span>
+                    </div>
+                  </td>
+                  <td class="h-px w-72 whitespace-nowrap">
+                    <div class="px-6 py-3">
+                      <Link
+                        v-if="
+                          $page.props.user.roles.includes('super-admin') ||
+                          $page.props.user.permissions.includes(
+                            'INGRESO.EDITAR',
+                          )
+                        "
+                        :href="route('ingreso.edit', item.id)"
+                        class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+                      >
+                        Editar
+                        <i class="fa-solid fa-pencil"></i>
+                      </Link>
+                      <button
+                        type="button"
+                        v-if="
+                          $page.props.user.roles.includes('super-admin') ||
+                          $page.props.user.permissions.includes(
+                            'INGRESO.ELIMINAR',
+                          )
+                        "
+                        @click="destroyMessage(item.id)"
+                        class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+                      >
+                        Eliminar
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
                     </div>
                   </td>
                 </tr>

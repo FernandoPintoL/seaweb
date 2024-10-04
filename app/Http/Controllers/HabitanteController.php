@@ -365,20 +365,15 @@ class HabitanteController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Habitante $apphabitante)
+    public function destroy(Habitante $habitante)
     {
         try{
-            /* return response()->json([
-                "isRequest"=> true,
-                "success" => false,
-                "messageError" => true,
-                "message" => "Verificacion",
-                "data" => $apphabitante
-            ]);  */
-            $perfil = Perfil::findOrFail($apphabitante->perfil_id);
+            /*$perfil = Perfil::findOrFail($apphabitante->perfil_id);
             $response = $perfil->delete();
             $habitante = Habitante::findOrFail($apphabitante->id);
+            $response = $habitante->delete();*/
             $response = $habitante->delete();
+            $delete_perfil = $habitante->perfil->delete();
             return response()->json([
                 "isRequest"=> true,
                 "isSuccess" => $response,

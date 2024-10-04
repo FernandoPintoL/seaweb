@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Roles;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use App\Http\Requests\StoreRolesRequest;
 use App\Http\Requests\UpdateRolesRequest;
 use Illuminate\Http\Request;
@@ -56,7 +58,8 @@ class RolesController extends Controller
      */
     public function create()
     {
-        return Inertia::render("Roles/CreateUpdate");
+        $permissions = Permission::all();
+        return Inertia::render("Roles/CreateUpdate", ['permissions' => $permissions]);
     }
 
     /**
@@ -65,10 +68,11 @@ class RolesController extends Controller
     public function store(StoreRolesRequest $request)
     {
         try{
-            $model = Roles::create([
+            $model = Role::create([
                 'name' => $request->name,
                 'guard_name' => 'web'
             ]);
+            $model->syncPermissions($request->permissions);
             return response()->json([
                 "isRequest"=> true,
                 "isSuccess" => $model != null,
@@ -104,15 +108,17 @@ class RolesController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Roles $role)
+    public function edit(Role $role)
     {
-        return Inertia::render("Roles/CreateUpdate", ['model'=> $role]);
+        $permissions = Permission::all();
+        $model_permissions = $role->permissions->pluck('name');
+        return Inertia::render("Roles/CreateUpdate", ['model'=> $role, 'permissions' => $permissions, 'model_permissions' => $model_permissions]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Roles $role)
+    public function update(Request $request, Role $role)
     {
         try{
             if($request->name != $role->name){
@@ -132,10 +138,13 @@ class RolesController extends Controller
                         ], 422 );
                     }
             }
+
             $response = $role->update([
                 'name' => $request->name,
                 'guard_name' => 'web'
             ]);
+
+            $role->syncPermissions($request->permissions);
             return response()->json([
                 "isRequest"=> true,
                 "isSuccess" => $response,

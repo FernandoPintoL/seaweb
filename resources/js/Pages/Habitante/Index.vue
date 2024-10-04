@@ -18,7 +18,6 @@ const props = defineProps({
 const Swal = inject('$swal')
 
 onMounted(() => {
-  console.log(props.listado)
   datas.list = props.listado
 })
 
@@ -35,49 +34,6 @@ const query = ref('')
 
 const onSearchQuery = (e) => {
   queryList(e.target.value)
-}
-
-const onSearchDate = () => {
-  console.log(datas.dateStart)
-  console.log(datas.dateEnd)
-  if (datas.dateStart.length > 0 && datas.dateEnd.length > 0) {
-    var start = fecha(datas.dateStart)
-    var end = fecha(datas.dateEnd)
-    console.log(start)
-    console.log(end)
-    queryDateList(start, end)
-  } else {
-    queryList('')
-  }
-}
-
-const queryDateList = async (date_start, date_end) => {
-  datas.isLoad = true
-  const url = route('appingreso.queryDate', {
-    start: date_start,
-    end: date_end,
-  })
-  await axios
-    .post(url)
-    .then((response) => {
-      console.log(response.data)
-      if (response.data.isSuccess) {
-        datas.list = response.data.data
-        datas.messageList = response.data.message
-        datas.metodoList =
-          datas.list.length > 0
-            ? ' con: Inicio' + date_start + ' | Fin' + date_end
-            : ''
-        console.log(datas.list.length)
-      } else {
-        datas.list = []
-      }
-    })
-    .catch((error) => {
-      console.log('respuesta error')
-      console.log(error)
-    })
-  datas.isLoad = false
 }
 
 const queryList = async (consulta) => {
@@ -101,8 +57,58 @@ const queryList = async (consulta) => {
   datas.isLoad = false
 }
 
+const queryListSaltoTake = async (consulta, skip, take) => {
+  datas.isLoad = true
+  const url = route('habitante.query', {
+    query: consulta.toUpperCase(),
+    skip: skip,
+    take: take,
+  })
+  await axios
+    .post(url)
+    .then((response) => {
+      console.log(response.data)
+      if (response.data.isSuccess) {
+        datas.list = response.data.data
+        datas.messageList = response.data.message
+        datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
+        console.log(datas.list.length)
+      } else {
+        datas.list = []
+      }
+    })
+    .catch((error) => {
+      console.log('respuesta error')
+      console.log(error)
+      Swal.fire({
+        title: 'Algun otro error esta sucediendo!',
+        text: error,
+        icon: 'error',
+      })
+    })
+  datas.isLoad = false
+}
+
 const fecha = (fechaData) => {
   return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM a')
+}
+
+const destroyMessage = (id) => {
+  Swal.fire({
+    title: 'Estas seguro de eliminar esta información?',
+    text: '',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Si, estoy seguro!',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      datas.isLoad = true
+      destroyData(id)
+      datas.isLoad = false
+    }
+  })
 }
 
 const destroyData = async (id) => {
@@ -110,29 +116,33 @@ const destroyData = async (id) => {
   await axios
     .delete(url)
     .then((response) => {
+      console.log(response)
       Swal.fire({
         title: response.data.isSuccess ? 'Buen Trabajo!' : 'Error!',
-        text: response.data.isSuccess
-          ? 'Dato creado exitosamente'
-          : 'Algún error inesperado',
+        text:
+          response.data.statusCode == 23503
+            ? 'ESTE DATO ESTA SIENDO USADO EN OTRAS TABLAS'
+            : response.data.message,
         icon: response.data.isSuccess ? 'success' : 'error',
       })
+      if (response.data.isSuccess) {
+        queryListSaltoTake('', 0, 20)
+      }
     })
     .catch((error) => {
-      if (error.isMessageError) {
+      if (error.response.data.isMessageError) {
         console.log(error.message)
         Swal.fire({
-          title: error.isMessageError
+          title: error.response.data.isMessageError
             ? 'Error desde el micro servicio!'
             : 'Algun otro error esta sucediendo!',
-          text: error.isMessageError
+          text: error.response.data.isMessageError
             ? 'Algunos datos fueron mal registrados'
             : 'Algun otro tipo de error sucedio',
-          icon: error.isMessageError ? 'error' : 'success',
+          icon: 'error',
         })
       }
     })
-  queryList('')
 }
 </script>
 
@@ -145,6 +155,10 @@ const destroyData = async (id) => {
       <HeaderIndex :title="'Residentes'">
         <template #link>
           <a
+            v-if="
+              $page.props.user.roles.includes('super-admin') ||
+              $page.props.user.permissions.includes('HABITANTE.CREAR')
+            "
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
             :href="route('habitante.create')"
           >
@@ -252,16 +266,6 @@ const destroyData = async (id) => {
                         </span>
                       </div>
                     </th>
-
-                    <th scope="col" class="px-6 py-3 text-start">
-                      <div class="flex items-center gap-x-2">
-                        <span
-                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                        >
-                          Creado
-                        </span>
-                      </div>
-                    </th>
                     <th scope="col" class="px-6 py-3 text-start">
                       <div class="flex items-center gap-x-2">
                         <span
@@ -331,26 +335,33 @@ const destroyData = async (id) => {
                     </td>
                     <td class="h-px w-72 whitespace-nowrap">
                       <div class="px-6 py-3">
-                        <span
-                          class="block text-sm text-gray-500 dark:text-neutral-500"
-                        >
-                          {{
-                            item.created_at == null
-                              ? ''
-                              : fecha(item.created_at)
-                          }}
-                        </span>
-                      </div>
-                    </td>
-                    <td class="h-px w-72 whitespace-nowrap">
-                      <div class="px-6 py-3">
                         <Link
+                          v-if="
+                            $page.props.user.roles.includes('super-admin') ||
+                            $page.props.user.permissions.includes(
+                              'HABITANTE.EDITAR',
+                            )
+                          "
                           :href="route('habitante.edit', item.id)"
-                          class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                          class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
                         >
                           Editar
                           <i class="fa-solid fa-pencil"></i>
                         </Link>
+                        <button
+                          type="button"
+                          v-if="
+                            $page.props.user.roles.includes('super-admin') ||
+                            $page.props.user.permissions.includes(
+                              'HABITANTE.ELIMINAR',
+                            )
+                          "
+                          @click="destroyMessage(item.id)"
+                          class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+                        >
+                          Eliminar
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
                       </div>
                     </td>
                   </tr>
