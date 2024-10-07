@@ -433,7 +433,7 @@ const changeInputPassword = () => {
 
       <template #actions>
         <PrimaryButton
-          v-if="!reactives.isLoad"
+            v-if="$page.props.user.roles.includes('super-admin')"
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >

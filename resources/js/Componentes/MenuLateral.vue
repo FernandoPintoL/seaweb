@@ -73,7 +73,10 @@ const logout = () => {
             <li
               v-if="
                 $page.props.user.roles.includes('super-admin') ||
-                $page.props.user.roles.includes('SUPERVISOR')
+                $page.props.user.permissions.includes('CONDOMINIO.LISTAR') ||
+                $page.props.user.permissions.includes('CONDOMINIO.MOSTRAR') ||
+                $page.props.user.permissions_roles.includes('CONDOMINIO.LISTAR') ||
+                $page.props.user.permissions_roles.includes('CONDOMINIO.MOSTRAR')
               "
             >
               <a
@@ -88,8 +91,10 @@ const logout = () => {
             <li
               v-if="
                 $page.props.user.roles.includes('super-admin') ||
-                $page.props.user.roles.includes('CONDOMINIO') ||
-                $page.props.user.roles.includes('SUPERVISOR')
+                $page.props.user.permissions.includes('INGRESO.LISTAR') ||
+                $page.props.user.permissions.includes('INGRESO.MOSTRAR')||
+                $page.props.user.permissions_roles.includes('INGRESO.LISTAR') ||
+                $page.props.user.permissions_roles.includes('INGRESO.MOSTRAR')
               "
             >
               <a
@@ -103,8 +108,10 @@ const logout = () => {
             <li
               v-if="
                 $page.props.user.roles.includes('super-admin') ||
-                $page.props.user.roles.includes('CONDOMINIO') ||
-                $page.props.user.roles.includes('SUPERVISOR')
+                $page.props.user.permissions.includes('HABITANTE.LISTAR') ||
+                $page.props.user.permissions.includes('HABITANTE.MOSTRAR')||
+                $page.props.user.permissions_roles.includes('HABITANTE.LISTAR') ||
+                $page.props.user.permissions_roles.includes('HABITANTE.MOSTRAR')
               "
             >
               <a
@@ -130,8 +137,10 @@ const logout = () => {
             <li
               v-if="
                 $page.props.user.roles.includes('super-admin') ||
-                $page.props.user.roles.includes('CONDOMINIO') ||
-                $page.props.user.roles.includes('SUPERVISOR')
+                $page.props.user.permissions.includes('VISITANTE.LISTAR') ||
+                $page.props.user.permissions.includes('VISITANTE.MOSTRAR')||
+                $page.props.user.permissions_roles.includes('VISITANTE.LISTAR') ||
+                $page.props.user.permissions_roles.includes('VISITANTE.MOSTRAR')
               "
             >
               <a
@@ -172,8 +181,10 @@ const logout = () => {
             <li
               v-if="
                 $page.props.user.roles.includes('super-admin') ||
-                $page.props.user.roles.includes('CONDOMINIO') ||
-                $page.props.user.roles.includes('SUPERVISOR')
+                $page.props.user.permissions.includes('VEHICULO.LISTAR') ||
+                $page.props.user.permissions.includes('VEHICULO.MOSTRAR')||
+                $page.props.user.permissions_roles.includes('VEHICULO.LISTAR') ||
+                $page.props.user.permissions_roles.includes('VEHICULO.MOSTRAR')
               "
             >
               <a
@@ -187,7 +198,10 @@ const logout = () => {
             <li
               v-if="
                 $page.props.user.roles.includes('super-admin') ||
-                $page.props.user.roles.includes('SUPERVISOR')
+                $page.props.user.permissions.includes('VIVIENDA.LISTAR') ||
+                $page.props.user.permissions.includes('VIVIENDA.MOSTRAR') ||
+                $page.props.user.permissions_roles.includes('VIVIENDA.LISTAR') ||
+                $page.props.user.permissions_roles.includes('VIVIENDA.MOSTRAR')
               "
             >
               <a

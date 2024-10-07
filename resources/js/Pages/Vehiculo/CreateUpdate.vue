@@ -233,11 +233,16 @@ const fecha = (fechaData) => {
   <AppLayout title="Crear Vehiculo">
     <div class="w-full mr-4" v-show="props.model != null">
       <button
-      v-if="
-                $page.props.user.roles.includes('super-admin') ||
-    $page.props.user.roles.includes('GALERIA_VEHICULO.LISTAR') ||
-                $page.props.user.roles.includes('GALERIA_VEHICULO.MOSTRAR')
-              "
+        v-if="$page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('GALERIA_VEHICULO.LISTAR') ||
+                $page.props.user.permissions.includes('GALERIA_VEHICULO.MOSTRAR') ||
+                $page.props.user.permissions.includes('GALERIA_VEHICULO.CREAR') ||
+                $page.props.user.permissions.includes('GALERIA_VEHICULO.EDITAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VEHICULO.MOSTRAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VEHICULO.LISTAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VEHICULO.CREAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VEHICULO.EDITAR')
+            "
         type="button"
         @click="changeShowGaleria"
         :class="
@@ -384,6 +389,12 @@ const fecha = (fechaData) => {
             </ActionMessage>
 
             <PrimaryButton
+              v-if="$page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('VEHICULO.CREAR') ||
+                $page.props.user.permissions.includes('VEHICULO.EDITAR') ||
+                $page.props.user.permissions_roles.includes('VEHICULO.CREAR') ||
+                $page.props.user.permissions_roles.includes('VEHICULO.EDITAR')
+            "
               :class="{ 'opacity-25': form.processing }"
               :disabled="form.processing"
             >

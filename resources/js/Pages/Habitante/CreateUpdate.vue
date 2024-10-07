@@ -526,7 +526,13 @@ const fecha = (fechaData) => {
 
       <template #actions>
         <PrimaryButton
-          v-if="!reactives.isLoad"
+          v-if="
+                $page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('HABITANTE.CREAR') ||
+                $page.props.user.permissions.includes('HABITANTE.EDITAR') ||
+                $page.props.user.permissions_roles.includes('HABITANTE.CREAR') ||
+                $page.props.user.permissions_roles.includes('HABITANTE.EDITAR')
+              "
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >

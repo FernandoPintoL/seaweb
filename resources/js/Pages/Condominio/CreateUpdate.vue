@@ -580,7 +580,13 @@ const changeInputPassword = () => {
 
       <template #actions>
         <PrimaryButton
-          v-if="!reactives.isLoad"
+          v-if="
+                $page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('CONDOMINIO.CREAR') ||
+                $page.props.user.permissions.includes('CONDOMINIO.EDITAR') ||
+                $page.props.user.permissions_roles.includes('CONDOMINIO.CREAR') ||
+                $page.props.user.permissions_roles.includes('CONDOMINIO.EDITAR')
+              "
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >

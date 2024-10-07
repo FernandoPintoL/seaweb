@@ -245,11 +245,12 @@ const fecha = (fechaData) => {
     </div>
     <div class="w-full pt-1" v-show="image != null">
       <button
-         v-if="
-                $page.props.user.roles.includes('super-admin') ||
-    $page.props.user.roles.includes('GALERIA_VISITANTE.CREAR') ||
-                $page.props.user.roles.includes('GALERIA_VISITANTE.EDITAR')
-              "
+        v-if="$page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('GALERIA_VISITANTE.CREAR') ||
+                $page.props.user.permissions.includes('GALERIA_VISITANTE.EDITAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VISITANTE.CREAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VISITANTE.EDITAR')
+            "
         @click="cargarImagenes"
         class="mr-0 py-1 px-1 font-semibold text-sm bg-gray-300 hover:bg-gray-400 text-gray-800 rounded inline-flex items-center"
       >
@@ -260,9 +261,7 @@ const fecha = (fechaData) => {
 
     <SectionBorder />
     <div
-      v-if="reactives.list.length > 0 && ($page.props.user.roles.includes('super-admin') ||
-    $page.props.user.roles.includes('GALERIA_VISITANTE.LISTAR') ||
-                $page.props.user.roles.includes('GALERIA_VISITANTE.MOSTRAR'))"
+      v-if="reactives.list.length > 0"
       class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
     >
       <div v-for="item in reactives.list" :key="item.id">
@@ -277,10 +276,12 @@ const fecha = (fechaData) => {
         </span>
         <div class="inline-flex rounded-lg shadow-sm">
           <button
-            v-if="
-                $page.props.user.roles.includes('super-admin') ||
-    $page.props.user.roles.includes('GALERIA_VISITANTE.MOSTRAR')
-              "
+          v-if="$page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('GALERIA_VISITANTE.LISTAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VISITANTE.LISTAR')||
+                $page.props.user.permissions.includes('GALERIA_VISITANTE.MOSTRAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VISITANTE.MOSTRAR')
+            "
             type="button"
             @click="showImage(item.photo_path)"
             class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-blue-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
@@ -289,10 +290,10 @@ const fecha = (fechaData) => {
             <i class="fa-solid fa-eye"></i>
           </button>
           <button
-            v-if="
-                $page.props.user.roles.includes('super-admin') ||
-    $page.props.user.roles.includes('GALERIA_VISITANTE.ELIMINAR')
-              "
+            v-if="$page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('GALERIA_VISITANTE.ELIMINAR') ||
+                $page.props.user.permissions_roles.includes('GALERIA_VISITANTE.ELIMINAR')
+            "
             type="button"
             @click="destroyPhoto(item.id)"
             class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"

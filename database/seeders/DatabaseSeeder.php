@@ -25,6 +25,15 @@ class DatabaseSeeder extends Seeder
         $listar = Permission::create(['name' => 'TIPO_VIVIENDA.LISTAR']);*/
 
         User::create([
+            'name' => 'SUPER VISOR',
+            'email' => 'supervisor@gmail.com',
+            'usernick' => 'supervisor',
+            'password' => Hash::make('123456789'),
+            "created_at"=> date_create('now')->format('Y-m-d H:i:s'),
+            "updated_at"=> date_create('now')->format('Y-m-d H:i:s')
+        ]);
+
+        User::create([
             'name' => 'Administrador',
             'email' => 'administrador@gmail.com',
             'usernick' => 'administrador',

@@ -379,6 +379,12 @@ const fecha = (fechaData) => {
         </ActionMessage>
 
         <PrimaryButton
+            v-if="$page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('VIVIENDA.CREAR') ||
+                $page.props.user.permissions.includes('VIVIENDA.EDITAR') ||
+                $page.props.user.permissions_roles.includes('VIVIENDA.CREAR') ||
+                $page.props.user.permissions_roles.includes('VIVIENDA.EDITAR')
+            "
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >

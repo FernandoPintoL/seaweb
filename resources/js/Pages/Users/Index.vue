@@ -128,6 +128,7 @@ const destroyData = async (id) => {
       <HeaderIndex :title="'Usuarios'">
         <template #link>
           <a
+            v-if="$page.props.user.roles.includes('super-admin')"
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
             :href="route('users.create')"
           >
@@ -295,6 +296,7 @@ const destroyData = async (id) => {
                     <td class="h-px w-72 whitespace-nowrap">
                       <div class="px-6 py-3">
                         <Link
+                            v-if="$page.props.user.roles.includes('super-admin')"
                           :href="route('users.edit', item.id)"
                           class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
                         >
@@ -302,6 +304,7 @@ const destroyData = async (id) => {
                           <i class="fa-solid fa-pencil"></i>
                         </Link>
                         <button
+                            v-if="$page.props.user.roles.includes('super-admin')"
                           type="button"
                           @click="destroyMessage(item.id)"
                           class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"

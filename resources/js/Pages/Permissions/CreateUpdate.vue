@@ -72,7 +72,7 @@ const sendModel = async () => {
 }
 
 const onValidateName = (e) => {
-  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ_*-/ ]{2,}$/.test(e.target.value)) {
+  if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ. ]{2,}$/.test(e.target.value)) {
     reactives.nameError =
       'El campo debe tener al menos 2 caracteres y solo pueden ser letras.'
   } else {
@@ -232,7 +232,7 @@ const changeInputPassword = () => {
 
       <template #actions>
         <PrimaryButton
-          v-if="!reactives.isLoad"
+          v-if="$page.props.user.roles.includes('super-admin')"
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >

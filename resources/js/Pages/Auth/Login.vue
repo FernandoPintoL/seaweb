@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import Checkbox from '@/Components/Checkbox.vue'
 import InputError from '@/Components/InputError.vue'
@@ -19,6 +19,10 @@ const form = useForm({
   remember: false,
 })
 
+const reactives = reactive({
+  isPassword: true,
+})
+
 const typeEmail = ref('text')
 
 const submit = () => {
@@ -30,6 +34,10 @@ const submit = () => {
     .post(route('login'), {
       onFinish: () => form.reset('password'),
     })
+}
+
+const changeInputPassword = () => {
+  reactives.isPassword = !reactives.isPassword
 }
 </script>
 
@@ -66,19 +74,35 @@ const submit = () => {
               </div>
               <InputError class="mt-2" :message="form.errors.email" />
             </div>
-            <div>
-              <label class="text-gray-800 text-sm mb-2 block">Password</label>
-              <div class="relative">
-                <input
-                  v-model="form.password"
-                  name="password"
-                  type="password"
-                  required
-                  class="w-full text-sm text-gray-800 border border-gray-300 px-4 py-3 rounded-lg outline-blue-600"
-                  placeholder="Ingrese password"
-                />
-              </div>
-              <InputError class="mt-2" :message="form.errors.password" />
+
+            <div class="col-span-12 sm:col-span-12">
+                <label
+                    for="password"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >
+                    Password
+                </label>
+                <div class="flex">
+                    <span
+                    @click="changeInputPassword"
+                    class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-e-0 border-gray-300 rounded-s-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600"
+                    >
+                        <i
+                            :class="reactives.isPassword ? 'fa-eye' : 'fa-eye-slash'"
+                            class="fa-solid"
+                        ></i>
+                    </span>
+                    <input
+                        v-model="form.password"
+                        @input="onValidatePassword"
+                        name="password"
+                        :type="reactives.isPassword ? 'password' : 'text'"
+                        required
+                        class="rounded-none rounded-e-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block flex-1 min-w-0 w-full text-sm p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Ingrese password"
+                    />
+                </div>
+                <InputError class="mt-2" :message="form.errors.passwordError" />
             </div>
 
             <div class="!mt-8">

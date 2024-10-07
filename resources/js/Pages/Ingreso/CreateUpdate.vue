@@ -638,6 +638,13 @@ const now = () => {
         </ActionMessage>
 
         <PrimaryButton
+        v-if="
+                $page.props.user.roles.includes('super-admin') ||
+                $page.props.user.permissions.includes('INGRESO.CREAR') ||
+                $page.props.user.permissions.includes('INGRESO.EDITAR') ||
+                $page.props.user.permissions_roles.includes('INGRESO.CREAR') ||
+                $page.props.user.permissions_roles.includes('INGRESO.EDITAR')
+              "
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"
         >

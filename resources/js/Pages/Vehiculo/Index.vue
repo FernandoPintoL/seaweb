@@ -201,7 +201,8 @@ const destroyData = async (id) => {
           <a
             v-if="
               $page.props.user.roles.includes('super-admin') ||
-              $page.props.user.permissions.includes('VEHICULO.CREAR')
+              $page.props.user.permissions.includes('VEHICULO.CREAR') ||
+              $page.props.user.permissions_roles.includes('VEHICULO.CREAR')
             "
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
             :href="route('vehiculo.create')"
