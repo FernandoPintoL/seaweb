@@ -38,6 +38,7 @@ const datas = reactive({
     dateEnd: '',
     messageList: '',
     metodoList: '',
+    toke : '',
     showImage: false
 })
 
@@ -68,12 +69,43 @@ const extraerName = (name) => {
     return partes[partes.length - 1];
 }
 
+const getToken = async () => {
+    const url = route('users.token', {
+        email: 'administrador@gmail.com',
+        password: '123456789',
+    })
+    await axios
+        .post(url)
+        .then((response) => {
+            console.log(response)
+            datas.token = response.data.token
+        })
+        .catch((error) => {
+            console.log(error)
+            Swal.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: 'OBTENER TOKEN',
+                text: error,
+                showConfirmButton: false,
+                timer: 1500,
+            })
+        })
+}
+
+const download = async (url, nameDetalle) => {
+  const name = extraerName(nameDetalle)
+    await getToken()
+  downloadImage(url, name)
+}
+
 const downloadImage = async (url, name) => {
     try {
         // Reemplaza la URL con la dirección de la imagen que quieras descargar
         // const imageUrl = "https://example.com/imagen.jpg";
 
         // Solicitud para obtener la imagen como un blob
+        
         var response = await axios.get(url, {
             responseType: 'blob',
             headers: {
@@ -400,6 +432,12 @@ const showImage = () => {
                                     <p class="text-xs">{{ item.detalle }}</p>
                                     <p class="text-xs">{{ item.photo_path }}</p>
                                     <div class="inline-flex rounded-lg shadow-sm">
+                                        <button
+                                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-yellow-600 text-white hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700 disabled:opacity-50 disabled:pointer-events-none"
+                                            @click="download(item.photo_path, item.detalle)">
+                                            <i class="fa-solid fa-download"></i>
+                                            DESCARGAR
+                                        </button>
                                         <button type="button" @click="openURL(item.photo_path)"
                                             class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-blue-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
                                             Ver completo
