@@ -39,9 +39,14 @@ const datas = reactive({
   messageList: '',
   metodoList: '',
   token: '',
+  showImage: false
 })
 
 const query = ref('')
+
+const queryStart = ref('')
+const queryEnd = ref('')
+
 
 const onSearchQuery = (e) => {
   queryList(e.target.value)
@@ -49,12 +54,11 @@ const onSearchQuery = (e) => {
 
 const descargarBlob = async () => {
   await getToken()
-  props.galeria.forEach((element) =>
+  datas.list.forEach((element) => {
     // openURL('/galeriavisitante/descargar/' + element.id),
-    downloadImage(element.photo_path),
-  )
-  console.log(props.galeria[0].photo_path)
-  console.log(datas.token)
+    const name = extraerName(element.detalle)
+    downloadImage(element.photo_path, name)
+  })
 }
 
 const descargarPhotoPath = () => {
@@ -116,7 +120,15 @@ const openURL = (url) => {
   window.open(url, '_blank')
 }
 
-const downloadImage = async (url) => {
+const extraerName = (name) => {
+  // Dividir la cadena por '/'
+  const partes = name.split('/');
+  // Tomar la última parte
+  console.log(partes)
+  return partes[partes.length - 1];
+}
+
+const downloadImage = async (url, name) => {
   try {
     // Reemplaza la URL con la dirección de la imagen que quieras descargar
     // const imageUrl = "https://example.com/imagen.jpg";
@@ -133,7 +145,7 @@ const downloadImage = async (url) => {
     const blob = new Blob([response.data], { type: 'image/jpeg' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = 'imagen.jpg'
+    link.download = name
     link.click()
 
     // Liberar la URL después de descargar
@@ -219,48 +231,103 @@ const destroyPhotoModel = async (id) => {
       }
     })
 }
+
+const onSearchRange = async () => {
+  console.log("BUSCANDO POR RANGO")
+  console.log(queryStart.value)
+  console.log(queryEnd.value)
+
+  datas.isLoad = true
+  const url = route('appgaleriavehiculo.queryRange', {
+    queryStart: queryStart.value,
+    queryEnd: queryEnd.value
+  })
+  await axios
+    .post(url)
+    .then((response) => {
+      console.log(response)
+      if (response.data.isSuccess) {
+        datas.list = []
+        datas.list = response.data.data
+        datas.messageList = response.data.message
+        datas.metodoList = response.data.message
+      } else {
+        datas.list = []
+      }
+    })
+    .catch((error) => {
+      console.log('respuesta error')
+      console.log(error)
+    })
+  datas.isLoad = false
+}
+
+const listarMayorID = async () => {
+  console.log(queryStart.value)
+
+  datas.isLoad = true
+  const url = route('appgaleriavehiculo.queryMayor', {
+    queryStart: queryStart.value
+  })
+  await axios
+    .post(url)
+    .then((response) => {
+      console.log(response)
+      if (response.data.isSuccess) {
+        datas.list = []
+        datas.list = response.data.data
+        datas.messageList = response.data.message
+        datas.metodoList = response.data.message
+      } else {
+        datas.list = []
+      }
+    })
+    .catch((error) => {
+      console.log('respuesta error')
+      console.log(error)
+    })
+  datas.isLoad = false
+}
+
+const clearInputs = () => {
+  queryStart.value = ''
+  queryEnd.value = ''
+}
+
+const showImage = () => {
+  datas.showImage = !datas.showImage
+}
 </script>
 
 <template>
   <AppLayout title="Galeria Vehiculos">
     <div
-      class="p-4 md:p-2 flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
-    >
+      class="p-4 md:p-2 flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700">
       <!-- Header -->
       <HeaderIndex :title="'Galeria Vehiculos'">
         <template #link></template>
       </HeaderIndex>
       <div
-        class="px-3 py-2 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200 dark:border-neutral-700"
-      >
-        <button
-          class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-yellow-600 text-white hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700 disabled:opacity-50 disabled:pointer-events-none"
-          @click="descargarBlob"
-        >
-          DESCARGAR BLOB
-        </button>
+        class="px-3 py-2 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200 dark:border-neutral-700">
+
         <button
           class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-          @click="descargarPhotoPath"
-        >
+          @click="descargarPhotoPath">
           DESCARGAR DB PHOTO PATH
         </button>
         <button
           class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-          @click="descargarDBPathDetalle"
-        >
+          @click="descargarDBPathDetalle">
           DESCARGAR DB PUBLICPATH(DETALLE)
         </button>
         <button
           class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-          @click="descargarDirectorioPath"
-        >
+          @click="descargarDirectorioPath">
           DESCARGAR DIRECTORIO PHOTO PATH
         </button>
         <button
           class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-          @click="descargarDirectorioUrl"
-        >
+          @click="descargarDirectorioUrl">
           DESCARGAR DIRECTORIO URL
         </button>
       </div>
@@ -268,42 +335,65 @@ const destroyPhotoModel = async (id) => {
       <!-- Search Table -->
       <FormSearch>
         <template #search-table>
-          <div class="grid lg:grid-cols-3 gap-4 sm:gap-6">
+          <div class="grid lg:grid-cols-2 gap-4 sm:gap-6">
             <div class="w-full flex flex-col">
-              <span
-                class="text-sm font-bold text-gray-900 dark:text-neutral-400"
-              >
+              <span class="text-sm font-bold text-gray-900 dark:text-neutral-400">
                 Busqueda
               </span>
               <div class="relative">
-                <input
-                  id="hs-table-with-pagination-search"
-                  type="text"
-                  v-model="query"
-                  @input="onSearchQuery"
+                <input id="hs-table-with-pagination-search" type="text" v-model="query" @input="onSearchQuery"
                   name="hs-table-with-pagination-search"
                   class="py-2 px-3 ps-9 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                  placeholder="Buscar"
-                />
-                <div
-                  class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-3"
-                >
-                  <svg
-                    class="shrink-0 size-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
+                  placeholder="Buscar" />
+                <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-3">
+                  <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
                     <circle cx="11" cy="11" r="8"></circle>
                     <path d="m21 21-4.3-4.3"></path>
                   </svg>
                 </div>
+              </div>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-sm font-bold text-gray-900 dark:text-neutral-400">
+                Rango de IDs
+              </span>
+              <div class="relative sm:flex rounded-lg shadow-sm">
+                <input type="text" v-model="queryStart" placeholder="Inicio"
+                  class="py-2 px-2 pe-11 block w-full border-gray-200 sm:shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                <input type="text" v-model="queryEnd" placeholder="Fin"
+                  class="py-2 px-2 pe-11 block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                <button type="button" @click="onSearchRange"
+                  class="py-2 px-2 inline-flex items-center min-w-fit w-full border border-gray-200 bg-gray-50 text-sm text-gray-500 -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:w-auto sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg dark:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-400">
+                  <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                  </svg>
+                </button>
+                <button type="button" @click="listarMayorID"
+                  class="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800 dark:hover:bg-blue-500">
+                  >
+                  <span class="sr-only">Icon description</span>
+                </button>
+                <button type="button" @click="clearInputs"
+                  class="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800 dark:hover:bg-blue-500">
+                  <i class="fa-solid fa-eraser"></i>
+                  <span class="sr-only">Icon description</span>
+                </button>
+                <button
+                  class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-yellow-600 text-white hover:bg-yellow-700 focus:outline-none focus:bg-yellow-700 disabled:opacity-50 disabled:pointer-events-none"
+                  @click="descargarBlob">
+                  <i class="fa-solid fa-download"></i>
+                  DESCARGAR BLOB
+                </button>
+                <button @click="showImage" type="button"
+                  class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  <i class="fa-solid fa-eye"></i>
+                  <span class="sr-only">Icon description</span>
+                </button>
               </div>
             </div>
           </div>
@@ -322,36 +412,26 @@ const destroyPhotoModel = async (id) => {
             <Loader />
           </div>
           <div v-else>
-            <div
-              v-if="datas.list.length > 0"
-              class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
-            >
+            <div v-if="datas.list.length > 0"
+              class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
               <!-- Table -->
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-6">
+              <div class="grid grid-cols-2 md:grid-cols-2 gap-4 p-6">
                 <div v-for="item in datas.list" :key="item.id">
-                  <img
-                    class="h-auto max-w-full rounded-lg"
-                    :src="item.photo_path"
-                    :alt="item.detalle"
-                  />
+                  <img v-show="datas.showImage" class="h-auto max-w-full rounded-lg" :src="item.photo_path"
+                    :alt="item.detalle" />
                   <p>ID: {{ item.id }}</p>
                   <p>ID VISITANTE: {{ item.vehiculo_id }}</p>
                   <p>Placa: {{ item.placa }}</p>
                   <p class="text-xs">{{ item.detalle }}</p>
+                  <p class="text-xs">{{ item.photo_path }}</p>
                   <div class="inline-flex rounded-lg shadow-sm">
-                    <button
-                      type="button"
-                      @click="openURL(item.photo_path)"
-                      class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-blue-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-                    >
+                    <button type="button" @click="openURL(item.photo_path)"
+                      class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-blue-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
                       Ver completo
                       <i class="fa-solid fa-eye"></i>
                     </button>
-                    <button
-                      type="button"
-                      @click="destroyPhoto(item.id)"
-                      class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-                    >
+                    <button type="button" @click="destroyPhoto(item.id)"
+                      class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
                       Eliminar
                       <i class="fa-solid fa-trash"></i>
                     </button>

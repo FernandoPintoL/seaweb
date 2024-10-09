@@ -9,6 +9,7 @@
     <link rel="icon" href="{{ asset('/assets/img/favicon.ico') }}">
 
     <!-- CSS Preline -->
+    <link rel="stylesheet" href="{{ asset('assets/css/main.min.css') }}">
     <link href="https://preline.co/assets/css/main.min.css" rel="stylesheet">
 
     <!-- Fonts -->
@@ -25,8 +26,8 @@
     <link href="{{ asset('/assets/css/fontawesome/css/regular.css') }}" rel="stylesheet">
 
     <script src="{{ asset('assets/js/jquery-3.7.1.min.js') }}"></script>
-    {{-- <link rel="stylesheet" href="{{ asset('assets/css/select2.min.css') }}">
-    <script src="{{ asset('assets/js/select2.min.js') }}"></script> --}}
+    <link rel="stylesheet" href="{{ asset('assets/css/select2.min.css') }}">
+    <script src="{{ asset('assets/js/select2.min.js') }}"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -51,6 +52,7 @@
 </head>
 <body class="bg-gray-50 dark:bg-neutral-900">
     @inertia
+    <script src="{{ asset('assets/js/preline.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/preline/dist/preline.min.js"></script>
 </body>
 </html>
