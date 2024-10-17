@@ -102,14 +102,22 @@ const logout = () => {
                                 Visitantes
                             </a>
                         </li>
-                        <li v-if="$page.props.user.roles.includes('super-admin')">
+                        <li v-if="$page.props.user.roles.includes('super-admin') ||
+                            $page.props.user.permissions.includes('TIPO_DOCUMENTO.LISTAR') ||
+                            $page.props.user.permissions.includes('TIPO_DOCUMENTO.MOSTRAR') ||
+                            $page.props.user.permissions_roles.includes('TIPO_DOCUMENTO.LISTAR') ||
+                            $page.props.user.permissions_roles.includes('TIPO_DOCUMENTO.MOSTRAR')">
                             <a class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-900 dark:text-neutral-200 dark:hover:text-neutral-300"
                                 :href="route('tipodocumento.index')">
                                 <i class="fa-solid fa-id-card-clip"></i>
                                 Tipo Documento
                             </a>
                         </li>
-                        <li v-if="$page.props.user.roles.includes('super-admin')">
+                        <li v-if="$page.props.user.roles.includes('super-admin') ||
+                            $page.props.user.permissions.includes('TIPO_VISITA.LISTAR') ||
+                            $page.props.user.permissions.includes('TIPO_VISITA.MOSTRAR') ||
+                            $page.props.user.permissions_roles.includes('TIPO_VISITA.LISTAR') ||
+                            $page.props.user.permissions_roles.includes('TIPO_VISITA.MOSTRAR')">
                             <a class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-900 dark:text-neutral-200 dark:hover:text-neutral-300"
                                 :href="route('tipovisita.index')">
                                 <i class="fa-solid fa-person-military-to-person"></i>
@@ -149,7 +157,11 @@ const logout = () => {
                                 Viviendas
                             </a>
                         </li>
-                        <li v-if="$page.props.user.roles.includes('super-admin')">
+                        <li v-if="$page.props.user.roles.includes('super-admin') ||
+                            $page.props.user.permissions.includes('USER.LISTAR') ||
+                            $page.props.user.permissions.includes('USER.MOSTRAR') ||
+                            $page.props.user.permissions_roles.includes('USER.LISTAR') ||
+                            $page.props.user.permissions_roles.includes('USER.MOSTRAR')">
                             <a class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-900 dark:text-neutral-200 dark:hover:text-neutral-300"
                                 :href="route('users.index')">
                                 <i class="fa-regular fa-user"></i>
