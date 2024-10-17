@@ -18,6 +18,7 @@ use App\Http\Controllers\IngresoController;
 use App\Http\Controllers\RolesController;
 use App\Http\Controllers\PermissionsController;
 use Illuminate\Support\Facades\DB;
+use App\Models\Condominio;
 
 
 Route::get('/', function () {
@@ -36,99 +37,131 @@ Route::middleware([
     'verified',
 ])->group(function () {
     Route::get('/dashboard', function () {
+        $user = auth()->user();
+        $crear = $user->canCrear('INGRESO');
+        $editar = $user->canEditar('INGRESO');
+        $eliminar = $user->canEliminar('INGRESO');
+        $isAdmin = $user->isSuperAdmin();
+        $idUserCondominio = null;
+        if ($isAdmin) {
+            $condominios = Condominio::all();
+        } else {
+            /// NO ES USUARIO ADMINISTRADOR
+            $condominios = $user->condominios->toArray();
+            $condominio = $user->condominio;
+            if ($condominio) {
+                array_push($condominios, $condominio);
+                $idUserCondominio = $user->id;
+            }
+        }
+
         $listado = DB::table('ingresos as i')
-                        ->select('i.id as id',
-                                'i.*',
-                                'h.id as id_residente',
-                                'p.name as name_residente',
-                                'p.nroDocumento as nroDocumento_residente',
-                                'vvd.id as id_vivienda',
-                                'vvd.nroVivienda',
-                                'v.id as id_visitante',
-                                'v.is_permitido',
-                                'v.description_is_no_permitido',
-                                'pv.nroDocumento as nroDocumento_visitante',
-                                'pv.name as name_visitante',
-                                'tv.id as tv_id',
-                                'tv.sigla as tv_sigla',
-                                'tv.detalle as tv_detalle')
-                        ->join('habitantes as h', 'h.id', '=', 'i.residente_habitante_id')
-                        ->join('viviendas as vvd', 'h.vivienda_id', '=', 'vvd.id')
-                        ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
-                        ->join('visitantes as v', 'v.id', '=', 'i.visitante_id')
-                        ->join('perfils as pv', 'v.perfil_id', '=', 'pv.id')
-                        ->join('tipo_visitas as tv', 'i.tipo_visita_id', '=', 'tv.id')
-                        ->skip(0)
-                        ->take(10)
-                        ->orderBy('id', 'DESC')
-                        ->get();
-        return Inertia::render('Dashboard', ['listado' => $listado]);
+            ->select(
+                'i.id as id',
+                'i.*',
+                'h.id as id_residente',
+                'p.name as name_residente',
+                'p.nroDocumento as nroDocumento_residente',
+                'vvd.id as id_vivienda',
+                'vvd.nroVivienda',
+                'c.propietario',
+                'v.id as id_visitante',
+                'v.is_permitido',
+                'v.description_is_no_permitido',
+                'pv.nroDocumento as nroDocumento_visitante',
+                'pv.name as name_visitante',
+                'tv.id as tv_id',
+                'tv.sigla as tv_sigla',
+                'tv.detalle as tv_detalle'
+            )
+            ->join('habitantes as h', 'h.id', '=', 'i.residente_habitante_id')
+            ->join('viviendas as vvd', 'h.vivienda_id', '=', 'vvd.id')
+            ->join('condominios as c', 'vvd.condominio_id', '=', 'c.id')
+            ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
+            ->join('visitantes as v', 'v.id', '=', 'i.visitante_id')
+            ->join('perfils as pv', 'v.perfil_id', '=', 'pv.id')
+            ->join('tipo_visitas as tv', 'i.tipo_visita_id', '=', 'tv.id')
+            ->when(!is_null($idUserCondominio), function ($query) use ($idUserCondominio) {
+                // Filtrar por el condominio del usuario cuando no sea admin
+                return $query->where('i.user_id', '=', $idUserCondominio);
+            })
+            ->skip(0)
+            ->take(10)
+            ->orderBy('id', 'DESC')
+            ->get();
+        return Inertia::render('Dashboard', [
+            'listado' => $listado,
+            'condominios' => $condominios,
+            'crear' => $crear,
+            'editar' => $editar,
+            'eliminar' => $eliminar
+        ]);
     })->name('dashboard');
     /* CONDOMINIOS RUTAS */
     Route::resource('condominio', CondominioController::class);
-    Route::post('/condominio/query',[CondominioController::class, 'query'])->name('condominio.query');
+    Route::post('/condominio/query', [CondominioController::class, 'query'])->name('condominio.query');
     /* TIPO DOCUMENTO RUTAS */
     Route::resource('tipodocumento', TipoDocumentoController::class);
-    Route::post('/tipodocumento/query',[TipoDocumentoController::class, 'query'])->name('tipodocumento.query');
+    Route::post('/tipodocumento/query', [TipoDocumentoController::class, 'query'])->name('tipodocumento.query');
     /* TIPO VISITAS RUTAS */
     Route::resource('tipovisita', TipoVisitaController::class);
-    Route::post('/tipovisita/query',[TipoVisitaController::class, 'query'])->name('tipovisita.query');
+    Route::post('/tipovisita/query', [TipoVisitaController::class, 'query'])->name('tipovisita.query');
     /* TIPO VIVIENDAS RUTAS */
     Route::resource('tipovivienda', TipoViviendaController::class);
-    Route::post('/tipovivienda/query',[TipoViviendaController::class, 'query'])->name('tipovivienda.query');
+    Route::post('/tipovivienda/query', [TipoViviendaController::class, 'query'])->name('tipovivienda.query');
     /* VEHICULOS RUTAS */
     Route::resource('vehiculo', VehiculoController::class);
-    Route::post('/vehiculo/query',[VehiculoController::class, 'query'])->name('vehiculo.query');
+    Route::post('/vehiculo/query', [VehiculoController::class, 'query'])->name('vehiculo.query');
     /* VIVIENDA RUTAS */
     Route::resource('vehiculo', VehiculoController::class);
-    Route::post('/vehiculo/query',[VehiculoController::class, 'query'])->name('vehiculo.query');
-    Route::put('/vehiculo/update/{vehiculo}',[VehiculoController::class, 'updateVehiculo'])->name('vehiculo.updateVehiculo');
+    Route::post('/vehiculo/query', [VehiculoController::class, 'query'])->name('vehiculo.query');
+    Route::put('/vehiculo/update/{vehiculo}', [VehiculoController::class, 'updateVehiculo'])->name('vehiculo.updateVehiculo');
     /* HABITANTES RUTAS */
     Route::resource('habitante', HabitanteController::class);
-    Route::post('/habitante/query',[HabitanteController::class, 'query'])->name('habitante.query');
-    Route::post('/habitante/querySearchWeb',[HabitanteController::class, 'querySearchWeb'])->name('habitante.querySearchWeb');
+    Route::post('/habitante/query', [HabitanteController::class, 'query'])->name('habitante.query');
+    Route::post('/habitante/querySearchWeb', [HabitanteController::class, 'querySearchWeb'])->name('habitante.querySearchWeb');
 
     /* VISITANTES RUTAS */
     Route::resource('visitante', VisitanteController::class);
-    Route::put('/visitante/update/{visitante}',[VisitanteController::class, 'updateWeb'])->name('visitante.updateWeb');
-    Route::post('/visitante/query',[VisitanteController::class, 'query'])->name('visitante.query');
-    Route::post('/visitante/querySearchWeb',[VisitanteController::class, 'querySearchWeb'])->name('visitante.querySearchWeb');
+    Route::put('/visitante/update/{visitante}', [VisitanteController::class, 'updateWeb'])->name('visitante.updateWeb');
+    Route::post('/visitante/query', [VisitanteController::class, 'query'])->name('visitante.query');
+    Route::post('/visitante/querySearchWeb', [VisitanteController::class, 'querySearchWeb'])->name('visitante.querySearchWeb');
 
     /* VIVIENDA RUTAS */
     Route::resource('vivienda', ViviendaController::class);
-    Route::post('/vivienda/query',[ViviendaController::class, 'query'])->name('vivienda.query');
+    Route::post('/vivienda/query', [ViviendaController::class, 'query'])->name('vivienda.query');
     /* INGRESOS RUTAS */
     Route::resource('ingreso', IngresoController::class);
-    Route::post('/ingreso/query',[IngresoController::class, 'query'])->name('ingreso.query');
-    Route::put('/ingreso/update/{ingreso}',[IngresoController::class, 'updateIngreso'])->name('ingreso.updateIngreso');
+    Route::post('/ingreso/query', [IngresoController::class, 'query'])->name('ingreso.query');
+    Route::put('/ingreso/update/{ingreso}', [IngresoController::class, 'updateIngreso'])->name('ingreso.updateIngreso');
 
     /* GALERIA VISITANTE */
     Route::resource('/galeriavisitante', GaleriaVisitanteController::class);
-    Route::post('/galeriavisitante/query',[GaleriaVisitanteController::class, 'query'])->name('galeriavisitante.query');
-    Route::post('/galeriavisitante/visitante',[GaleriaVisitanteController::class, 'getGaleriaVisitante'])->name('galeriavisitante.getGaleriaVisitante');
-    Route::post('/galeriavisitante/uploadimage', [GaleriaVisitanteController::class,'uploadimage'])->name('galeriavisitante.uploadimage');
-    Route::get('/galeriavisitante/descargar/{id}',[GaleriaVisitanteController::class, 'descargar'])->name('galeriavisitante.des');
-    Route::get('/galeriavisitante/descargardbpath/{id}',[GaleriaVisitanteController::class, 'descargarDBPath'])->name('galeriavisitante.descargardbpath');
-    Route::get('/galeriavisitante/descargardbphotopath/{id}',[GaleriaVisitanteController::class, 'descargarDBPhotoPath'])->name('galeriavisitante.descargardbphotopath');
-    Route::get('/galeriavisitante/descargardirectoriopath/{id}',[GaleriaVisitanteController::class, 'descargarDirectorioPath'])->name('galeriavisitante.descargardirectoriopath');
-    Route::get('/galeriavisitante/descargardirectoriourl/{id}',[GaleriaVisitanteController::class, 'descargarDirectorioUrl'])->name('galeriavisitante.descargarDirectorioUrl');
+    Route::post('/galeriavisitante/query', [GaleriaVisitanteController::class, 'query'])->name('galeriavisitante.query');
+    Route::post('/galeriavisitante/visitante', [GaleriaVisitanteController::class, 'getGaleriaVisitante'])->name('galeriavisitante.getGaleriaVisitante');
+    Route::post('/galeriavisitante/uploadimage', [GaleriaVisitanteController::class, 'uploadimage'])->name('galeriavisitante.uploadimage');
+    Route::get('/galeriavisitante/descargar/{id}', [GaleriaVisitanteController::class, 'descargar'])->name('galeriavisitante.des');
+    Route::get('/galeriavisitante/descargardbpath/{id}', [GaleriaVisitanteController::class, 'descargarDBPath'])->name('galeriavisitante.descargardbpath');
+    Route::get('/galeriavisitante/descargardbphotopath/{id}', [GaleriaVisitanteController::class, 'descargarDBPhotoPath'])->name('galeriavisitante.descargardbphotopath');
+    Route::get('/galeriavisitante/descargardirectoriopath/{id}', [GaleriaVisitanteController::class, 'descargarDirectorioPath'])->name('galeriavisitante.descargardirectoriopath');
+    Route::get('/galeriavisitante/descargardirectoriourl/{id}', [GaleriaVisitanteController::class, 'descargarDirectorioUrl'])->name('galeriavisitante.descargarDirectorioUrl');
 
     /* GALERIA VEHICULO */
     Route::resource('/galeriavehiculo', GaleriaVehiculoController::class);
 
     /* ACTUALIZAR INFORMACION DE USUARIO*/
-    Route::put('/user/updateinformacion/{user}',[UserController::class, 'updateInformacion'])->name('user.updateinformacion');
+    Route::put('/user/updateinformacion/{user}', [UserController::class, 'updateInformacion'])->name('user.updateinformacion');
 
     /* USUARIOS */
-    Route::resource( '/users', UserController::class);
-    Route::post('/users/query',[UserController::class, 'query'])->name('users.query');
+    Route::resource('/users', UserController::class);
+    Route::post('/users/query', [UserController::class, 'query'])->name('users.query');
 
     /* ROLES */
-    Route::resource( '/roles', RolesController::class);
-    Route::post('/roles/query',[RolesController::class, 'query'])->name('roles.query');
+    Route::resource('/roles', RolesController::class);
+    Route::post('/roles/query', [RolesController::class, 'query'])->name('roles.query');
 
 
     /* PRIVILEGIOS */
-    Route::resource( '/permissions', PermissionsController::class);
-    Route::post('/permissions/query',[PermissionsController::class, 'query'])->name('permissions.query');
+    Route::resource('/permissions', PermissionsController::class);
+    Route::post('/permissions/query', [PermissionsController::class, 'query'])->name('permissions.query');
 });

@@ -12,50 +12,52 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 
 
 class VisitanteController extends Controller
 {
-    public function query(Request $request){
-        try{
+    public function query(Request $request)
+    {
+        try {
             $queryStr    = $request->get('query');
             $queryUpper = strtoupper($queryStr);
 
-            if($request->get('black_list')){
+            if ($request->get('black_list')) {
                 $responsse = DB::table('visitantes as v')
-                        ->select('v.id as id','v.*','p.name','p.nroDocumento', 'p.celular')
-                        ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
-                        ->where('v.is_permitido','=', false)
-                        ->orderBy('v.id', 'DESC')
-                        ->get();
-            }else{
-                if($request->get('skip') == null && $request->get('take') == null){
+                    ->select('v.id as id', 'v.*', 'p.name', 'p.nroDocumento', 'p.celular')
+                    ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
+                    ->where('v.is_permitido', '=', false)
+                    ->orderBy('v.id', 'DESC')
+                    ->get();
+            } else {
+                if ($request->get('skip') == null && $request->get('take') == null) {
                     $responsse = DB::table('visitantes as v')
-                        ->select('v.id as id','v.*','p.name','p.nroDocumento', 'p.celular')
+                        ->select('v.id as id', 'v.*', 'p.name', 'p.nroDocumento', 'p.celular')
                         ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
-                        ->where('p.name','LIKE',"%".$queryUpper."%")
-                        ->orWhere('p.nroDocumento','LIKE',"%".$queryUpper."%")
+                        ->where('p.name', 'LIKE', "%" . $queryUpper . "%")
+                        ->orWhere('p.nroDocumento', 'LIKE', "%" . $queryUpper . "%")
                         ->orderBy('v.id', 'DESC')
                         ->get();
-                }else{
+                } else {
                     $skip = $request->get('skip');
                     $take = $request->get('take');
                     $responsse = DB::table('visitantes as v')
-                            ->select('v.id as id','v.*','p.name','p.nroDocumento', 'p.celular')
-                            ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
-                            ->where('p.name','LIKE',"%".$queryUpper."%")
-                            ->orWhere('p.nroDocumento','LIKE',"%".$queryUpper."%")
-                            ->skip($skip)
-                            ->take($take)
-                            ->orderBy('v.id', 'DESC')
-                            ->get();
+                        ->select('v.id as id', 'v.*', 'p.name', 'p.nroDocumento', 'p.celular')
+                        ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
+                        ->where('p.name', 'LIKE', "%" . $queryUpper . "%")
+                        ->orWhere('p.nroDocumento', 'LIKE', "%" . $queryUpper . "%")
+                        ->skip($skip)
+                        ->take($take)
+                        ->orderBy('v.id', 'DESC')
+                        ->get();
                 }
             }
 
-            $cantidad = count( $responsse );
+            $cantidad = count($responsse);
             $str = strval($cantidad);
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "$str datos encontrados",
@@ -63,11 +65,11 @@ class VisitanteController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -78,14 +80,15 @@ class VisitanteController extends Controller
         }
     }
 
-    public function queryId(Request $request){
-        try{
-            $responsse = Visitante::with( 'perfil' )
-                        ->where('id', '=', $request->get('query'))
-                        ->orderBy('id', 'DESC')
-                        ->get();
+    public function queryId(Request $request)
+    {
+        try {
+            $responsse = Visitante::with('perfil')
+                ->where('id', '=', $request->get('query'))
+                ->orderBy('id', 'DESC')
+                ->get();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "Consulta visitante realizada correctamente...",
@@ -93,11 +96,11 @@ class VisitanteController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -112,14 +115,19 @@ class VisitanteController extends Controller
      */
     public function index()
     {
-        $listado = $responsse = DB::table('visitantes as v')
-                            ->select('v.id as id','v.*','p.name','p.nroDocumento', 'p.celular')
-                            ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
-                            ->skip(0)
-                            ->take(20)
-                            ->orderBy('v.id', 'DESC')
-                            ->get();
-        return Inertia::render("Visitante/Index", ['listado'=> $listado]);
+        Gate::authorize('viewAny', Visitante::class);
+        $user = auth()->user();
+        $listado = DB::table('visitantes as v')
+            ->select('v.id as id', 'v.*', 'p.name', 'p.nroDocumento', 'p.celular')
+            ->join('perfils as p', 'v.perfil_id', '=', 'p.id')
+            ->skip(0)
+            ->take(20)
+            ->orderBy('v.id', 'DESC')
+            ->get();
+        $crear = $user->canCrear('VISITANTE');
+        $editar = $user->canEditar('VISITANTE');
+        $eliminar = $user->canEliminar('VISITANTE');
+        return Inertia::render("Visitante/Index", ['listado' => $listado, 'crear' => $crear, 'editar' => $editar, 'eliminar' => $eliminar]);
     }
 
     /**
@@ -127,7 +135,14 @@ class VisitanteController extends Controller
      */
     public function create()
     {
-        return Inertia::render("Visitante/CreateUpdate");
+        Gate::authorize('create', Visitante::class);
+        $user = auth()->user();
+        $crear = $user->canCrear('VISITANTE');
+        $editar = $user->canEditar('VISITANTE');
+        $crear_galeria = $user->canCrear('GALERIA_VISITANTE');
+        $editar_galeria = $user->canEditar('GALERIA_VISITANTE');
+        $eliminar_galeria = $user->canEliminar('GALERIA_VISITANTE');
+        return Inertia::render("Visitante/CreateUpdate", ['crear' => $crear, 'editar' => $editar, 'crear_galeria' => $crear_galeria, 'editar_galeria' => $editar_galeria, 'eliminar_galeria' => $eliminar_galeria]);
     }
 
     /**
@@ -135,17 +150,17 @@ class VisitanteController extends Controller
      */
     public function store(Request $request)
     {
-        try{
+        try {
             $perfil = [];
-            if($request->isMobile){
+            if ($request->isMobile) {
                 $perfil    = $request->perfil;
                 $validator = Validator::make($perfil, [
-                    'name' => ['required','min:5'],
+                    'name' => ['required', 'min:5'],
                     'nroDocumento' => ['unique:perfils'],
                     'tipo_documento_id' => ['required', 'numeric']
                 ]);
                 if ($validator->fails()) {
-                    return response()->json( [
+                    return response()->json([
                         "isRequest" => true,
                         "isSuccess" => false,
                         "isMessageError" => true,
@@ -153,16 +168,16 @@ class VisitanteController extends Controller
                         "messageError" => $validator->errors(),
                         "data" => [],
                         "statusCode" => 422
-                    ], 422 );
+                    ], 422);
                 }
                 $perfil = Perfil::create($perfil);
-                $perfil->update( [
+                $perfil->update([
                     'created_at' => $request->created_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->created_at,
                     'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
                 ]);
-            }else{
+            } else {
                 $perfil = Perfil::create($request->all());
-                $perfil->update( [
+                $perfil->update([
                     'created_at' => $request->created_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->created_at,
                     'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
                 ]);
@@ -179,7 +194,7 @@ class VisitanteController extends Controller
             // $model     = Visitante::findOrFail( $responsse->id )->with('perfil');
 
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $responsse != null,
                 "isMessageError" => $responsse == null,
                 "message" => $responsse != null ? "Registro completo" : "Error!!!",
@@ -187,11 +202,11 @@ class VisitanteController extends Controller
                 "data" => $datas,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -207,8 +222,8 @@ class VisitanteController extends Controller
      */
     public function show($appvisitante)
     {
-        try{
-            $responsse = Visitante::with( 'perfil' )->get();
+        try {
+            $responsse = Visitante::with('perfil')->get();
             /*$responsse = DB::table('visitantes as m')
                         ->select('m.*','p.*','td.*')
                         ->join('perfils as p', 'm.perfil_id', '=', 'p.id')
@@ -216,7 +231,7 @@ class VisitanteController extends Controller
                         ->where('m.id','=',$appvisitante)
                         ->first();*/
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "Show Visitante realizada correctamente...",
@@ -224,11 +239,11 @@ class VisitanteController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -244,10 +259,11 @@ class VisitanteController extends Controller
      */
     public function edit(Visitante $visitante)
     {
+        Gate::authorize('update', $visitante);
         $perfil = $visitante->perfil;
         $visitante->perfil = $perfil;
-        $list_galeria = GaleriaVisitante::where('visitante_id','=',$visitante->id)->get();
-        return Inertia::render("Visitante/CreateUpdate", ['model'=> $visitante, 'listado' => $list_galeria ]);
+        $list_galeria = GaleriaVisitante::where('visitante_id', '=', $visitante->id)->get();
+        return Inertia::render("Visitante/CreateUpdate", ['model' => $visitante, 'listado' => $list_galeria]);
     }
 
     /**
@@ -255,24 +271,24 @@ class VisitanteController extends Controller
      */
     public function update(Request $request, Visitante $appvisitante)
     {
-        try{
+        try {
             $responsse = 0;
             $perfil = Perfil::findOrFail($appvisitante->perfil_id);
-            if($request->isMobile){
+            if ($request->isMobile) {
                 //ACTUALIZACION DESDE EL MOVIL
                 $responsse = $perfil->update($request->perfil);
-                $perfil->update( [
+                $perfil->update([
                     'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
                 ]);
-            }else{
+            } else {
                 //ACTUALIZAR DESDE LA WEB
                 $responsse = $perfil->update($request->all());
-                $perfil->update( [
+                $perfil->update([
                     'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
                 ]);
             }
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $responsse != null,
                 "isMessageError" => $responsse != null,
                 "message" => $responsse != null ? "Registro completo" : "Error!!!",
@@ -280,11 +296,11 @@ class VisitanteController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -295,16 +311,17 @@ class VisitanteController extends Controller
         }
     }
 
-    public function updateIsPermitido(Request $request, Visitante $visitante){
-        try{
+    public function updateIsPermitido(Request $request, Visitante $visitante)
+    {
+        try {
             // $visitante = Visitante::findOrFail( $request->get('id'));
-            $responsse = $visitante->update( [
-                    'is_permitido' => $request->get('is_permitido'),
-                    'description_is_no_permitido' => $request->get('description_is_no_permitido'),
-                    'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
-            ] );
+            $responsse = $visitante->update([
+                'is_permitido' => $request->get('is_permitido'),
+                'description_is_no_permitido' => $request->get('description_is_no_permitido'),
+                'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
+            ]);
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $responsse != null,
                 "isMessageError" => $responsse != null,
                 "message" => $responsse != null ? "Registro completo" : "Error!!!",
@@ -312,11 +329,11 @@ class VisitanteController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -344,17 +361,17 @@ class VisitanteController extends Controller
                 "request_perfil_nroDoc" => $request->perfil['nroDocumento'],
             ]
         ]);*/
-        try{
+        try {
             $responsse = 0;
             $perfilRequest    = $request->perfil;
             $perfil        = $visitante->perfil;
-            if($request->isMobile){
-                if($perfilRequest['nroDocumento'] != $perfil->nroDocumento){
+            if ($request->isMobile) {
+                if ($perfilRequest['nroDocumento'] != $perfil->nroDocumento) {
                     $validator = Validator::make($perfilRequest, [
                         'nroDocumento' => ['unique:perfils']
                     ]);
                     if ($validator->fails()) {
-                        return response()->json( [
+                        return response()->json([
                             "isRequest" => true,
                             "isSuccess" => false,
                             "isMessageError" => true,
@@ -362,23 +379,23 @@ class VisitanteController extends Controller
                             "messageError" => $validator->errors(),
                             "data" => [],
                             "statusCode" => 422
-                        ], 422 );
+                        ], 422);
                     }
                 }
                 //ACTUALIZACION DESDE EL MOVIL
                 $responsse = $perfil->update($perfilRequest);
-                $perfil->update( [
+                $perfil->update([
                     'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
                 ]);
-            }else{
+            } else {
                 //ACTUALIZAR DESDE LA WEB
                 $responsse = $perfil->update($request->all());
-                $perfil->update( [
+                $perfil->update([
                     'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
                 ]);
             }
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $responsse != null,
                 "isMessageError" => $responsse != null,
                 "message" => $responsse != null ? "Actualización completa" : "Error!!!",
@@ -386,11 +403,11 @@ class VisitanteController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -406,20 +423,20 @@ class VisitanteController extends Controller
      */
     public function destroy(Visitante $visitante)
     {
-        try{
-            $galerias = GaleriaVisitante::where('visitante_id','=',$visitante->id)->get();
-            foreach($galerias as $galeria){
-                $existe = Storage::disk( 'public' )->exists( $galeria->detalle );
-            if ($existe) {
-                Storage::disk('public')->delete($galeria->detalle);
-            }
+        try {
+            $galerias = GaleriaVisitante::where('visitante_id', '=', $visitante->id)->get();
+            foreach ($galerias as $galeria) {
+                $existe = Storage::disk('public')->exists($galeria->detalle);
+                if ($existe) {
+                    Storage::disk('public')->delete($galeria->detalle);
+                }
                 $responseData = $galeria->delete();
             }
             $response = $visitante->delete();
             $delete_perfil = $visitante->perfil->delete();
 
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $response,
                 "isMessageError" => !$response,
                 "message" => $response != null ? "Eliminado Correctamente" : "Error!!!",
@@ -427,11 +444,11 @@ class VisitanteController extends Controller
                 "data" => [],
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,

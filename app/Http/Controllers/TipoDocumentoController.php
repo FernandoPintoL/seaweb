@@ -8,20 +8,22 @@ use App\Http\Requests\UpdateTipoDocumentoRequest;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
 
 class TipoDocumentoController extends Controller
 {
-    public function query(Request $request){
-        try{
+    public function query(Request $request)
+    {
+        try {
             $queryStr = $request->get('query');
-            $responsse = TipoDocumento::where('sigla','LIKE','%'.$queryStr.'%')
-                        ->orWhere('detalle','LIKE','%'.$queryStr.'%')
-                        ->orderBy('id', 'ASC')
-                        ->get();
-            $cantidad = count( $responsse );
+            $responsse = TipoDocumento::where('sigla', 'LIKE', '%' . $queryStr . '%')
+                ->orWhere('detalle', 'LIKE', '%' . $queryStr . '%')
+                ->orderBy('id', 'ASC')
+                ->get();
+            $cantidad = count($responsse);
             $str = strval($cantidad);
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "$str datos encontrados",
@@ -29,11 +31,11 @@ class TipoDocumentoController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -49,8 +51,17 @@ class TipoDocumentoController extends Controller
 
     public function index()
     {
+        Gate::authorize('viewAny', TipoDocumento::class);
         $tipoDocumento = TipoDocumento::all();
-        return Inertia::render("TipoDocumento/Index", ['listado' => $tipoDocumento]);
+        $user = auth()->user();
+        $crear = $user->canCrear('TIPO_DOCUMENTO');
+        $editar = $user->canEditar('TIPO_DOCUMENTO');
+        $eliminar = $user->canEliminar('TIPO_DOCUMENTO');
+        return Inertia::render("TipoDocumento/Index", [
+            'listado' => $tipoDocumento,
+            'crear' => $crear,
+            'editar' => $editar,
+            'eliminar' => $eliminar]);
     }
 
     /**
@@ -58,7 +69,15 @@ class TipoDocumentoController extends Controller
      */
     public function create()
     {
-        return Inertia::render("TipoDocumento/CreateUpdate");
+        Gate::authorize('create', TipoDocumento::class);
+        $user = auth()->user();
+        $crear = $user->canCrear('TIPO_DOCUMENTO');
+        $editar = $user->canEditar('TIPO_DOCUMENTO');
+        $eliminar = $user->canEliminar('TIPO_DOCUMENTO');
+        return Inertia::render("TipoDocumento/CreateUpdate", [
+            'crear' => $crear,
+            'editar' => $editar,
+            'eliminar' => $eliminar]);
     }
 
     /**
@@ -67,11 +86,11 @@ class TipoDocumentoController extends Controller
 
     public function store(StoreTipoDocumentoRequest $request)
     {
-        try{
+        try {
             // return $request->all();
             $tipoDocumento = TipoDocumento::create($request->all());
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $tipoDocumento != null,
                 "isMessageError" => $tipoDocumento != null,
                 "message" => $tipoDocumento != null ? "Registro completo" : "Error!!!",
@@ -79,11 +98,11 @@ class TipoDocumentoController extends Controller
                 "data" => $tipoDocumento,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -99,11 +118,11 @@ class TipoDocumentoController extends Controller
      */
     public function show(TipoDocumento $tipodocumento)
     {
-        try{
+        try {
             // $habitante = Habitante::where('vivienda_id','=',$idvivienda)->first();
             // $perfil    = Perfil::findOrFail( $habitante->perfil_id );
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "Solicitud realizada correctamente...",
@@ -111,11 +130,11 @@ class TipoDocumentoController extends Controller
                 "data" => $tipodocumento,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -131,7 +150,16 @@ class TipoDocumentoController extends Controller
      */
     public function edit(TipoDocumento $tipodocumento)
     {
-        return Inertia::render("TipoDocumento/CreateUpdate", ['model'=> $tipodocumento]);
+        Gate::authorize('update', $tipodocumento);
+        $user = auth()->user();
+        $crear = $user->canCrear('TIPO_DOCUMENTO');
+        $editar = $user->canEditar('TIPO_DOCUMENTO');
+        $eliminar = $user->canEliminar('TIPO_DOCUMENTO');
+        return Inertia::render("TipoDocumento/CreateUpdate", [
+            'model' => $tipodocumento,
+            'crear' => $crear,
+            'editar' => $editar,
+            'eliminar' => $eliminar]);
     }
 
     /**
@@ -139,27 +167,27 @@ class TipoDocumentoController extends Controller
      */
     public function update(Request $request, TipoDocumento $tipodocumento)
     {
-        try{
-            if($request->sigla != $tipodocumento->sigla){
+        try {
+            if ($request->sigla != $tipodocumento->sigla) {
                 $model     = $request->all();
                 $validator = Validator::make($model, [
-                        'sigla' => ['unique:tipo_documentos']
-                    ]);
-                    if ($validator->fails()) {
-                        return response()->json( [
-                            "isRequest" => true,
-                            "isSuccess" => false,
-                            "isMessageError" => true,
-                            "message" => $validator->errors(),
-                            "messageError" => $validator->errors(),
-                            "data" => [],
-                            "statusCode" => 422
-                        ], 422 );
-                    }
+                    'sigla' => ['unique:tipo_documentos']
+                ]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        "isRequest" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
+                        "message" => $validator->errors(),
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
+                    ], 422);
+                }
             }
             $response = $tipodocumento->update($request->all());
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $response,
                 "isMessageError" => !$response,
                 "message" => $response ? "Datos actualizados correctamente" : "Datos no actualizados",
@@ -167,11 +195,11 @@ class TipoDocumentoController extends Controller
                 "data" => $response,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -187,10 +215,10 @@ class TipoDocumentoController extends Controller
      */
     public function destroy(TipoDocumento $tipodocumento)
     {
-        try{
+        try {
             $response = $tipodocumento->delete();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $response,
                 "isMessageError" => !$response,
                 "message" => $response ? "Datos eliminados correctamente" : "Los datos no pudieron ser eliminados",
@@ -198,11 +226,11 @@ class TipoDocumentoController extends Controller
                 "data" => $response,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,

@@ -13,38 +13,74 @@ const props = defineProps({
         type: Array,
         default: [],
     },
+    condominios: {
+        type: Array,
+        default: [],
+    },
+    crear: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    },
+    editar: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    },
+    eliminar: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    },
 })
 
 const Swal = inject('$swal')
 
-const datas = reactive({
-    list: [],
-    isLoad: false,
-    dateStart: '',
-    dateEnd: '',
-    messageList: '',
-    metodoList: '',
-})
-
 onMounted(() => {
     datas.list = props.listado
+    if (props.condominios.length > 0) {
+        datas.condominio_id = props.condominios[0].id;
+    }
     // addInputEventListeners()
     //   queryList('')
 })
 
+const datas = reactive({
+    list: [],
+    isLoad: false,
+    created_at_start: null,
+    created_at_end: null,
+    salida_crated_at_start: null,
+    salida_created_at_end: null,
+    skip: null,
+    take: null,
+    messageList: '',
+    metodoList: '',
+    condominio_id: 0,
+    salida_registradas: false
+})
+
+
+
 const query = ref('')
 
 const recargarPagina = () => {
-    query.value = ''
+    query.value = null;
+
     queryList('')
 }
 
+
+const buscarButton = () => {
+    console.log(query.value)
+    if (query.value == null) {
+        query.value = ""
+    }
+    queryList(query.value)
+}
+
 const onSearchQuery = (e) => {
-    datas.dateStart = ''
-    datas.dateEnd = ''
     queryList(e.target.value)
 }
 
+/* BUSQUEDA POR FECHA */
 const onSearchDate = () => {
     console.log(datas.dateStart)
     console.log(datas.dateEnd)
@@ -72,6 +108,7 @@ const onSearchDate = () => {
     }
 }
 
+/* BUSQUEDA POR FECHA */
 const queryDateList = async (date_start, date_end) => {
     datas.isLoad = true
     const url = route('appingreso.queryDate', {
@@ -101,6 +138,7 @@ const queryDateList = async (date_start, date_end) => {
     datas.isLoad = false
 }
 
+/* BUSQUEDA SKIP TAKE */
 const queryListSaltoTake = async (consulta, skip, take) => {
     datas.isLoad = true
     const url = route('ingreso.query', {
@@ -133,15 +171,73 @@ const queryListSaltoTake = async (consulta, skip, take) => {
     datas.isLoad = false
 }
 
+/* BUSQUEDA GENERICA */
 const queryList = async (consulta) => {
-    datas.isLoad = true
-    const url = route('ingreso.query', {
+
+    if (consulta.length == 0 && datas.created_at_start == null && datas.created_at_end == null && datas.salida_crated_at_start == null && datas.salida_created_at_end == null) {
+        datas.skip = 0
+        datas.take = 10
+    } else {
+        datas.skip = null
+        datas.take = null
+    }
+
+    // || (datas.created_at_start.length > 0 && datas.created_at_end.length > 0)
+    if (datas.created_at_start != null && datas.created_at_end == null) {
+        Swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: 'Complete correctamente el rango de fechas',
+            showConfirmButton: false,
+            timer: 1500
+        })
+        return;
+    }
+
+    if (datas.created_at_start == null && datas.created_at_end != null) {
+        Swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: 'Complete correctamente el rango de fechas',
+            showConfirmButton: false,
+            timer: 1500
+        })
+        return;
+    }
+
+    if (datas.created_at_start != null && datas.created_at_end != null) {
+        const start = moment(datas.created_at_start)
+        const end = moment(datas.created_at_end)
+        console.log(end.isBefore(start))
+        if (end.isBefore(start)) {
+            Swal.fire({
+                position: "top-end",
+                icon: "error",
+                title: 'Complete correctamente el rango de fechas',
+                showConfirmButton: false,
+                timer: 1500
+            })
+            return;
+        }
+    }
+
+    const data = {
         query: consulta.toUpperCase(),
-    })
+        condominio_id: datas.condominio_id,
+        created_at_start: datas.created_at_start,
+        created_at_end: datas.created_at_end,
+        salida_created_at_start: datas.salida_created_at_start,
+        salida_created_at_end: datas.salida_created_at_end,
+        skip: datas.skip,
+        take: datas.take
+    };
+    console.log(data);
+    datas.isLoad = true
+    const url = route('ingreso.query', data)
     await axios
         .post(url)
         .then((response) => {
-            console.log(response.data)
+            console.log(response)
             if (response.data.isSuccess) {
                 datas.list = response.data.data
                 datas.messageList = response.data.message
@@ -214,11 +310,21 @@ const destroyData = async (id) => {
             }
         })
 }
+
 const clearInputs = () => {
-    datas.dateEnd = '';
-    datas.dataStart = '';
-    query.value = '';
-    queryListSaltoTake('', 0, 10)
+    datas.created_at_start = null;
+    datas.created_at_end = null;
+    datas.salida_created_at_start = null;
+    datas.salida_created_at_end = null;
+    query.value = null;
+    datas.skip = 0;
+    datas.take = 10;
+    if (props.condominios.length > 0) {
+        datas.condominio_id = props.condominios[0].id;
+    } else {
+        datas.condominio_id = 0
+    }
+    queryList('')
 }
 </script>
 <template>
@@ -227,11 +333,8 @@ const clearInputs = () => {
         <!-- Header -->
         <HeaderIndex :title="'Ingresos'">
             <template #link>
-                <a v-if="
-                    $page.props.user.roles.includes('super-admin') ||
-                    $page.props.user.permissions.includes('INGRESO.CREAR') ||
-                    $page.props.user.permissions_roles.includes('INGRESO.CREAR')
-                " class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                <a v-if="props.crear"
+                    class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
                     :href="route('ingreso.create')">
                     <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -247,8 +350,8 @@ const clearInputs = () => {
         <!-- Search Table -->
         <FormSearch>
             <template #search-table>
-                <div class="grid lg:grid-cols-3 gap-4 sm:gap-6">
-                    <div class="flex flex-col">
+                <div class="grid lg:grid-cols-2 gap-4 sm:gap-6">
+                    <div class="flex flex-col pt-3">
                         <span class="text-sm font-bold text-gray-900 dark:text-neutral-400">
                             Busqueda
                         </span>
@@ -268,15 +371,26 @@ const clearInputs = () => {
                         </div>
                     </div>
                     <div class="flex flex-col">
+                        <span class="text-sm font-bold text-gray-900 dark:text-neutral-400">Seleccione un
+                            condominio</span>
+                        <select id=" condominios-ids" v-model="datas.condominio_id"
+                            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-full text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600">
+                            <option v-for="item in props.condominios" :key="item.id" :value="item.id">
+                                COD: {{ item.id }} / NOMBRE: {{ item.propietario }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid lg:grid-cols-2 gap-4 sm:gap-6">
+                    <div class="flex flex-col pt-5">
                         <span class="text-sm font-bold text-gray-900 dark:text-neutral-400">
-                            Rango de fechas
+                            Visitas creadas en fecha:
                         </span>
                         <div class="sm:flex rounded-lg shadow-sm">
-                            <input type="datetime-local" v-model="datas.dateStart" placeholder="Inicio"
+                            <input type="datetime-local" v-model="datas.created_at_start" placeholder="Inicio"
                                 class="py-2 px-2 pe-11 block w-full border-gray-200 sm:shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
-                            <input type="datetime-local" v-model="datas.dateEnd"
+                            <input type="datetime-local" v-model="datas.created_at_end"
                                 class="py-2 px-2 pe-11 block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
-                            <button type="button" @click="onSearchDate"
+                            <!-- <button type="button" @click="onSearchDate"
                                 class="py-2 px-2 inline-flex items-center min-w-fit w-full border border-gray-200 bg-gray-50 text-sm text-gray-500 -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:w-auto sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg dark:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-400">
                                 <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -284,17 +398,42 @@ const clearInputs = () => {
                                     <circle cx="11" cy="11" r="8"></circle>
                                     <path d="m21 21-4.3-4.3"></path>
                                 </svg>
-                            </button>
-                            <button type="button" @click="clearInputs"
-                                class="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800 dark:hover:bg-blue-500">
-                                <i class="fa-solid fa-eraser"></i>
-                                <span class="sr-only">Icon description</span>
-                            </button>
+                            </button> -->
+                        </div>
+                    </div>
+                    <div class="flex flex-col pt-5">
+                        <span class="text-sm font-bold text-gray-900 dark:text-neutral-400">
+                            Salidas creadas en fecha:
+                        </span>
+                        <div class="sm:flex rounded-lg shadow-sm">
+                            <input type="datetime-local" v-model="datas.salida_created_at_start" placeholder="Inicio"
+                                class="py-2 px-2 pe-11 block w-full border-gray-200 sm:shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                            <input type="datetime-local" v-model="datas.salida_created_at_end"
+                                class="py-2 px-2 pe-11 block w-full border-gray-200 shadow-sm -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg text-sm relative focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600" />
+                            <!-- <button type="button" @click="onSearchDate"
+                                class="py-2 px-2 inline-flex items-center min-w-fit w-full border border-gray-200 bg-gray-50 text-sm text-gray-500 -mt-px -ms-px first:rounded-t-lg last:rounded-b-lg sm:w-auto sm:first:rounded-s-lg sm:mt-0 sm:first:ms-0 sm:first:rounded-se-none sm:last:rounded-es-none sm:last:rounded-e-lg dark:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-400">
+                                <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.3-4.3"></path>
+                                </svg>
+                            </button> -->
                         </div>
                     </div>
                 </div>
-                <div class="pt-2 dark:bg-neutral-800 dark:border-neutral-700">
-                    <span>{{ datas.messageList }} {{ datas.metodoList }}</span>
+                <div class="grid lg:grid-cols-2 gap-4 sm:gap-6 mt-3">
+                    <div class="flex flex-col">
+                        <div class="pt-2 dark:bg-neutral-800 dark:border-neutral-700">
+                            <span>{{ datas.messageList }} {{ datas.metodoList }}</span>
+                        </div>
+                    </div>
+                    <div class="flex pl-7">
+                        <button type="button" @click="clearInputs"
+                            class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Limpiar</button>
+                        <button type="button" @click="buscarButton"
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Buscar</button>
+                    </div>
                 </div>
             </template>
         </FormSearch>
@@ -327,20 +466,11 @@ const clearInputs = () => {
                                         <div class="flex items-center gap-x-2">
                                             <span
                                                 class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-                                                RESIDENTE
+                                                RESIDENTE / VISITANTE
                                             </span>
                                         </div>
                                     </th>
-
-                                    <th scope="col" class="px-6 py-3 text-start">
-                                        <div class="flex items-center gap-x-2">
-                                            <span
-                                                class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
-                                                VISITANTE
-                                            </span>
-                                        </div>
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-start">
+                                    <th v-if="props.editar || props.eliminar" scope="col" class="px-6 py-3 text-start">
                                         <div class="flex items-center gap-x-2">
                                             <span
                                                 class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
@@ -404,12 +534,6 @@ const clearInputs = () => {
                                                         INGRESO:
                                                         {{ item.created_at != null ? item.created_at : '' }}
                                                     </span>
-                                                    <!-- <p
-                            class="block text-sm text-gray-500 dark:text-neutral-500"
-                          >
-                            Detalle Registro:
-                            {{ item.detalle != null ? item.detalle : '' }}
-                          </p> -->
                                                     <span
                                                         class="block text-sm font-semibold text-gray-800 dark:text-neutral-200">
                                                         {{
@@ -419,22 +543,9 @@ const clearInputs = () => {
                                                                 : 'SIN REGISTRO DE SALIDA'
                                                         }}
                                                     </span>
-                                                    <!-- <p
-                            class="block text-sm font-semibold text-gray-800 dark:text-neutral-200"
-                          >
-                            Detalle Salida:
-                            {{
-                              item.detalle_salida != null
-                                ? item.detalle_salida
-                                : ''
-                            }}
-                          </p> -->
                                                     <div class="py-1.5">
-                                                        <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline focus:outline-none focus:underline font-medium dark:text-blue-500"
-                                                            :href="route('ingreso.edit', item.id)">
-                                                            Editar
-                                                            <i class="fa-solid fa-pencil"></i>
-                                                        </a>
+                                                        <span>Condominio</span>
+                                                        {{ item.propietario }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -442,6 +553,9 @@ const clearInputs = () => {
                                     </td>
                                     <td class="size-px whitespace-nowrap">
                                         <div class="px-6 py-3">
+                                            <span>
+                                                RESIDENTE:
+                                            </span>
                                             <span
                                                 class="block text-sm font-semibold text-gray-800 dark:text-neutral-200">
                                                 {{
@@ -464,9 +578,10 @@ const clearInputs = () => {
                                                 {{ item.nroVivienda == null ? '' : item.nroVivienda }}
                                             </span>
                                         </div>
-                                    </td>
-                                    <td class="size-px whitespace-nowrap">
                                         <div class="px-6 py-3">
+                                            <span>
+                                                VISITANTES:
+                                            </span>
                                             <span
                                                 class="block text-sm font-semibold text-gray-800 dark:text-neutral-200">
                                                 {{
@@ -485,22 +600,14 @@ const clearInputs = () => {
                                             </span>
                                         </div>
                                     </td>
-                                    <td class="h-px w-72 whitespace-nowrap">
+                                    <td v-if="props.crear || props.editar" class="h-px w-72 whitespace-nowrap">
                                         <div class="px-6 py-3">
-                                            <Link v-if="
-                                                $page.props.user.roles.includes('super-admin') ||
-                                                $page.props.user.permissions.includes('INGRESO.EDITAR') ||
-                                                $page.props.user.permissions_roles.includes('INGRESO.EDITAR')
-                                            " :href="route('ingreso.edit', item.id)"
+                                            <Link v-if="props.editar" :href="route('ingreso.edit', item.id)"
                                                 class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
                                             Editar
                                             <i class="fa-solid fa-pencil"></i>
                                             </Link>
-                                            <button type="button" v-if="
-                                                $page.props.user.roles.includes('super-admin') ||
-                                                $page.props.user.permissions.includes('INGRESO.ELIMINAR') ||
-                                                $page.props.user.permissions_roles.includes('INGRESO.ELIMINAR')
-                                            " @click="destroyMessage(item.id)"
+                                            <button type="button" v-if="props.eliminar" @click="destroyMessage(item.id)"
                                                 class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
                                                 Eliminar
                                                 <i class="fa-solid fa-trash"></i>

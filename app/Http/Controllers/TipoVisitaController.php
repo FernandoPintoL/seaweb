@@ -8,18 +8,21 @@ use App\Http\Requests\UpdateTipoVisitaRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
+
 class TipoVisitaController extends Controller
 {
-    public function query(Request $request){
-        try{
+    public function query(Request $request)
+    {
+        try {
             $queryStr = $request->get('query');
-            $responsse = TipoVisita::where('sigla','LIKE','%'.$queryStr.'%')
-                        ->orWhere('detalle','LIKE','%'.$queryStr.'%')
-                        ->get();
-            $cantidad = count( $responsse );
+            $responsse = TipoVisita::where('sigla', 'LIKE', '%' . $queryStr . '%')
+                ->orWhere('detalle', 'LIKE', '%' . $queryStr . '%')
+                ->get();
+            $cantidad = count($responsse);
             $str = strval($cantidad);
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "$str datos encontrados",
@@ -27,11 +30,11 @@ class TipoVisitaController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -46,8 +49,18 @@ class TipoVisitaController extends Controller
      */
     public function index()
     {
+        Gate::authorize('viewAny', TipoVisita::class);
+        $user = auth()->user();
+        $crear = $user->canCrear('TIPO_VISITA');
+        $editar = $user->canEditar('TIPO_VISITA');
+        $eliminar = $user->canEliminar('TIPO_VISITA');
         $listado = TipoVisita::all();
-        return Inertia::render("TipoVisita/Index", ['listado'=> $listado]);
+        return Inertia::render("TipoVisita/Index", [
+            'listado' => $listado,
+            'crear' => $crear,
+            'editar' => $editar,
+            'elimnar' => $eliminar
+        ]);
     }
 
     /**
@@ -55,7 +68,16 @@ class TipoVisitaController extends Controller
      */
     public function create()
     {
-        return Inertia::render("TipoVisita/CreateUpdate");
+        Gate::authorize('create', TipoVisita::class);
+        $user = auth()->user();
+        $crear = $user->canCrear('TIPO_VISITA');
+        $editar = $user->canEditar('TIPO_VISITA');
+        $eliminar = $user->canEliminar('TIPO_VISITA');
+        return Inertia::render("TipoVisita/CreateUpdate", [
+            'crear' => $crear,
+            'editar' => $editar,
+            'elimnar' => $eliminar
+        ]);
     }
 
     /**
@@ -63,10 +85,10 @@ class TipoVisitaController extends Controller
      */
     public function store(StoreTipoVisitaRequest $request)
     {
-        try{
+        try {
             $model = TipoVisita::create($request->all());
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $model != null,
                 "isMessageError" => $model != null,
                 "message" => $model != null ? "Solicitud completada" : "Error!!!",
@@ -74,11 +96,11 @@ class TipoVisitaController extends Controller
                 "data" => $model,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -94,11 +116,11 @@ class TipoVisitaController extends Controller
      */
     public function show(TipoVisita $apptipoVisita)
     {
-        try{
+        try {
             // $habitante = Habitante::where('vivienda_id','=',$idvivienda)->first();
             // $perfil    = Perfil::findOrFail( $habitante->perfil_id );
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "Solicitud realizada correctamente...",
@@ -106,11 +128,11 @@ class TipoVisitaController extends Controller
                 "data" => $apptipoVisita,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -126,7 +148,16 @@ class TipoVisitaController extends Controller
      */
     public function edit(TipoVisita $tipovisitum)
     {
-        return Inertia::render("TipoVisita/CreateUpdate", ['model'=> $tipovisitum]);
+        Gate::authorize('update', $tipovisitum);
+        $crear = $user->canCrear('TIPO_VISITA');
+        $editar = $user->canEditar('TIPO_VISITA');
+        $eliminar = $user->canEliminar('TIPO_VISITA');
+        return Inertia::render("TipoVisita/CreateUpdate", [
+            'model' => $tipovisitum,
+            'crear' => $crear,
+            'editar' => $editar,
+            'eliminar' => $eliminar
+        ]);
     }
 
     /**
@@ -134,27 +165,27 @@ class TipoVisitaController extends Controller
      */
     public function update(Request $request, TipoVisita $tipovisitum)
     {
-        try{
-            if($request->sigla != $tipovisitum->sigla){
+        try {
+            if ($request->sigla != $tipovisitum->sigla) {
                 $model     = $request->all();
                 $validator = Validator::make($model, [
-                        'sigla' => ['unique:tipo_visitas']
-                    ]);
-                    if ($validator->fails()) {
-                        return response()->json( [
-                            "isRequest" => true,
-                            "isSuccess" => false,
-                            "isMessageError" => true,
-                            "message" => $validator->errors(),
-                            "messageError" => $validator->errors(),
-                            "data" => [],
-                            "statusCode" => 422
-                        ], 422 );
-                    }
+                    'sigla' => ['unique:tipo_visitas']
+                ]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        "isRequest" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
+                        "message" => $validator->errors(),
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
+                    ], 422);
+                }
             }
             $response = $tipovisitum->update($request->all());
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $response,
                 "isMessageError" => !$response,
                 "message" => $response ? "Datos actualizados correctamente" : "Datos no actualizados",
@@ -162,11 +193,11 @@ class TipoVisitaController extends Controller
                 "data" => $response,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -182,10 +213,10 @@ class TipoVisitaController extends Controller
      */
     public function destroy(TipoVisita $tipovisitum)
     {
-        try{
+        try {
             $response = $tipovisitum->delete();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $response,
                 "isMessageError" => !$response,
                 "message" => $response ? "Datos eliminados correctamente" : "Los datos no pudieron ser eliminados",
@@ -193,11 +224,11 @@ class TipoVisitaController extends Controller
                 "data" => $response,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,

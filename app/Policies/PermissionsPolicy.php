@@ -13,7 +13,7 @@ class PermissionsPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->canIndex('PERMISSION');
     }
 
     /**
@@ -21,7 +21,7 @@ class PermissionsPolicy
      */
     public function view(User $user, Permissions $permissions): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -29,7 +29,7 @@ class PermissionsPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->canCrear('PERMISSION');
     }
 
     /**
@@ -37,7 +37,7 @@ class PermissionsPolicy
      */
     public function update(User $user, Permissions $permissions): bool
     {
-        //
+        return $user->canEditar('PERMISSION');
     }
 
     /**
@@ -45,7 +45,7 @@ class PermissionsPolicy
      */
     public function delete(User $user, Permissions $permissions): bool
     {
-        //
+        return $user->canEliminar('PERMISSION');
     }
 
     /**
@@ -53,7 +53,7 @@ class PermissionsPolicy
      */
     public function restore(User $user, Permissions $permissions): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -61,6 +61,6 @@ class PermissionsPolicy
      */
     public function forceDelete(User $user, Permissions $permissions): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 }

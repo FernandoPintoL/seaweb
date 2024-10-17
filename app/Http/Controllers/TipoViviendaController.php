@@ -8,20 +8,21 @@ use App\Http\Requests\UpdateTipoViviendaRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
 
 class TipoViviendaController extends Controller
 {
-    public function query(Request $request){
-        try{
+    public function query(Request $request)
+    {
+        try {
             $queryStr = $request->get('query');
-            $responsse = TipoVivienda::where('sigla','LIKE','%'.$queryStr.'%')
-                        ->orWhere('detalle','LIKE','%'.$queryStr.'%')
-                        ->orderBy('id', 'DESC')
-                        ->get();
-            $cantidad = count( $responsse );
+            $responsse = TipoVivienda::where('sigla', 'LIKE', '%' . $queryStr . '%')
+                ->orWhere('detalle', 'LIKE', '%' . $queryStr . '%')
+                ->get();
+            $cantidad = count($responsse);
             $str = strval($cantidad);
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "$str datos encontrados",
@@ -29,11 +30,11 @@ class TipoViviendaController extends Controller
                 "data" => $responsse,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -48,8 +49,18 @@ class TipoViviendaController extends Controller
      */
     public function index()
     {
+        Gate::authorize('viewAny', TipoVivienda::class);
         $listado = TipoVivienda::all();
-        return Inertia::render("TipoVivienda/Index", ['listado'=> $listado]);
+        $user = auth()->user();
+        $crear = $user->canCrear('TIPO_VIVIENDA');
+        $editar = $user->canEditar('TIPO_VIVIENDA');
+        $eliminar = $user->canEliminar('TIPO_VIVIENDA');
+        return Inertia::render("TipoVivienda/Index", [
+            'listado' => $listado,
+            'crear' => $crear,
+            'editar' => $editar,
+            'eliminar' => $eliminar
+        ]);
     }
 
     /**
@@ -57,7 +68,12 @@ class TipoViviendaController extends Controller
      */
     public function create()
     {
-        return Inertia::render("TipoVivienda/CreateUpdate");
+        Gate::authorize('create', TipoVivienda::class);
+        $user = auth()->user();
+        $crear = $user->canCrear('TIPO_VIVIENDA');
+        $editar = $user->canEditar('TIPO_VIVIENDA');
+        $eliminar = $user->canEliminar('TIPO_VIVIENDA');
+        return Inertia::render("TipoVivienda/CreateUpdate", ['crear' => $crear, 'editar' => $editar, 'eliminar' => $eliminar]);
     }
 
     /**
@@ -65,10 +81,10 @@ class TipoViviendaController extends Controller
      */
     public function store(StoreTipoViviendaRequest $request)
     {
-        try{
+        try {
             $model = TipoVivienda::create($request->all());
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $model != null,
                 "isMessageError" => $model != null,
                 "message" => $model != null ? "Solicitud completada" : "Error!!!",
@@ -76,11 +92,11 @@ class TipoViviendaController extends Controller
                 "data" => $model,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -96,11 +112,11 @@ class TipoViviendaController extends Controller
      */
     public function show(TipoVivienda $tipoVivienda)
     {
-        try{
+        try {
             // $habitante = Habitante::where('vivienda_id','=',$idvivienda)->first();
             // $perfil    = Perfil::findOrFail( $habitante->perfil_id );
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => true,
                 "isMessageError" => false,
                 "message" => "Solicitud realizada correctamente...",
@@ -108,11 +124,11 @@ class TipoViviendaController extends Controller
                 "data" => $tipoVivienda,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -128,7 +144,12 @@ class TipoViviendaController extends Controller
      */
     public function edit(TipoVivienda $tipovivienda)
     {
-        return Inertia::render("TipoVivienda/CreateUpdate", ['model'=> $tipovivienda]);
+        Gate::authorize('update', $tipovivienda);
+        $user = auth()->user();
+        $crear = $user->canCrear('TIPO_VIVIENDA');
+        $editar = $user->canEditar('TIPO_VIVIENDA');
+        $eliminar = $user->canEliminar('TIPO_VIVIENDA');
+        return Inertia::render("TipoVivienda/CreateUpdate", ['model' => $tipovivienda, 'crear' => $crear, 'editar' => $editar, 'eliminar' => $eliminar]);
     }
 
     /**
@@ -136,27 +157,27 @@ class TipoViviendaController extends Controller
      */
     public function update(Request $request, TipoVivienda $tipovivienda)
     {
-        try{
-            if($request->sigla != $tipovivienda->sigla){
+        try {
+            if ($request->sigla != $tipovivienda->sigla) {
                 $model     = $request->all();
                 $validator = Validator::make($model, [
-                        'sigla' => ['unique:tipo_viviendas']
-                    ]);
-                    if ($validator->fails()) {
-                        return response()->json( [
-                            "isRequest" => true,
-                            "isSuccess" => false,
-                            "isMessageError" => true,
-                            "message" => $validator->errors(),
-                            "messageError" => $validator->errors(),
-                            "data" => [],
-                            "statusCode" => 422
-                        ], 422 );
-                    }
+                    'sigla' => ['unique:tipo_viviendas']
+                ]);
+                if ($validator->fails()) {
+                    return response()->json([
+                        "isRequest" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
+                        "message" => $validator->errors(),
+                        "messageError" => $validator->errors(),
+                        "data" => [],
+                        "statusCode" => 422
+                    ], 422);
+                }
             }
             $response = $tipovivienda->update($request->all());
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $response,
                 "isMessageError" => !$response,
                 "message" => $response ? "Datos actualizados correctamente" : "Datos no actualizados",
@@ -164,11 +185,11 @@ class TipoViviendaController extends Controller
                 "data" => $response,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
@@ -184,10 +205,10 @@ class TipoViviendaController extends Controller
      */
     public function destroy(TipoVivienda $tipoVivienda)
     {
-        try{
+        try {
             $response = $tipoVivienda->delete();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => $response,
                 "isMessageError" => !$response,
                 "message" => $response ? "Datos eliminados correctamente" : "Los datos no pudieron ser eliminados",
@@ -195,11 +216,11 @@ class TipoViviendaController extends Controller
                 "data" => $response,
                 "statusCode" => 200
             ]);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             $message = $e->getMessage();
             $code = $e->getCode();
             return response()->json([
-                "isRequest"=> true,
+                "isRequest" => true,
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,

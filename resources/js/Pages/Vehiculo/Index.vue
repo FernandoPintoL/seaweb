@@ -13,7 +13,19 @@ const props = defineProps({
   listado: {
     type: Array,
     default: [],
-  },
+    },
+    crear: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    },
+    editar: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    },
+    eliminar: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    }
 })
 
 const Swal = inject('$swal')
@@ -199,11 +211,7 @@ const destroyData = async (id) => {
       <HeaderIndex :title="'Vehiculos'">
         <template #link>
           <a
-            v-if="
-              $page.props.user.roles.includes('super-admin') ||
-              $page.props.user.permissions.includes('VEHICULO.CREAR') ||
-              $page.props.user.permissions_roles.includes('VEHICULO.CREAR')
-            "
+            v-if="props.crear"
             class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
             :href="route('vehiculo.create')"
           >
@@ -329,7 +337,7 @@ const destroyData = async (id) => {
                         </span>
                       </div>
                     </th>
-                    <th class="px-3 py-3 text-start">
+                    <th v-if="props.editar || props.eliminar" class="px-3 py-3 text-start">
                       <div class="flex items-center gap-x-2">
                         <span
                           class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
@@ -370,14 +378,9 @@ const destroyData = async (id) => {
                         item.created_at != null ? fecha(item.created_at) : ''
                       }}
                     </td>
-                    <td class="px-3 py-3">
+                    <td v-if="props.editar || props.eliminar" class="px-3 py-3">
                       <Link
-                        v-if="
-                          $page.props.user.roles.includes('super-admin') ||
-                          $page.props.user.permissions.includes(
-                            'VEHICULO.EDITAR',
-                          )
-                        "
+                        v-if="props.editar"
                         :href="route('vehiculo.edit', item.id)"
                         class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
                       >
@@ -386,12 +389,7 @@ const destroyData = async (id) => {
                       </Link>
                       <button
                         type="button"
-                        v-if="
-                          $page.props.user.roles.includes('super-admin') ||
-                          $page.props.user.permissions.includes(
-                            'VEHICULO.ELIMINAR',
-                          )
-                        "
+                        v-if="props.eliminar"
                         @click="destroyMessage(item.id)"
                         class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
                       >

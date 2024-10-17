@@ -13,7 +13,7 @@ class GaleriaVisitantePolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->canIndex(modelo: 'GALERIA_VISITANTE');
     }
 
     /**
@@ -21,7 +21,7 @@ class GaleriaVisitantePolicy
      */
     public function view(User $user, GaleriaVisitante $galeriaVisitante): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -29,7 +29,7 @@ class GaleriaVisitantePolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->canCrear('GALERIA_VISITANTE');
     }
 
     /**
@@ -37,7 +37,7 @@ class GaleriaVisitantePolicy
      */
     public function update(User $user, GaleriaVisitante $galeriaVisitante): bool
     {
-        //
+        return $user->canEditar('GALERIA_VISITANTE');
     }
 
     /**
@@ -45,7 +45,7 @@ class GaleriaVisitantePolicy
      */
     public function delete(User $user, GaleriaVisitante $galeriaVisitante): bool
     {
-        //
+        return $user->canEliminar('GALERIA_VISITANTE');
     }
 
     /**
@@ -53,7 +53,7 @@ class GaleriaVisitantePolicy
      */
     public function restore(User $user, GaleriaVisitante $galeriaVisitante): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -61,6 +61,6 @@ class GaleriaVisitantePolicy
      */
     public function forceDelete(User $user, GaleriaVisitante $galeriaVisitante): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 }

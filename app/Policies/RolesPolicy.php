@@ -13,7 +13,7 @@ class RolesPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->canIndex('ROLE');
     }
 
     /**
@@ -21,7 +21,7 @@ class RolesPolicy
      */
     public function view(User $user, Roles $roles): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -29,7 +29,7 @@ class RolesPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->canCrear('ROLE');
     }
 
     /**
@@ -37,7 +37,7 @@ class RolesPolicy
      */
     public function update(User $user, Roles $roles): bool
     {
-        //
+        return $user->canEditar(modelo: 'ROLE');
     }
 
     /**
@@ -45,7 +45,7 @@ class RolesPolicy
      */
     public function delete(User $user, Roles $roles): bool
     {
-        //
+        return $user->canEliminar('ROLE');
     }
 
     /**
@@ -53,7 +53,7 @@ class RolesPolicy
      */
     public function restore(User $user, Roles $roles): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -61,6 +61,6 @@ class RolesPolicy
      */
     public function forceDelete(User $user, Roles $roles): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 }

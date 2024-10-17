@@ -10,434 +10,414 @@ import Alert from '@/Componentes/Alerts.vue'
 import FormSearch from '@/Componentes/FormSearch.vue'
 
 const props = defineProps({
-  listado: {
-    type: Array,
-    default: [],
-  },
+    listado: {
+        type: Array,
+        default: [],
+    },
+    condominios: {
+        type: Array,
+        default: [],
+    },
+    crear: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    },
+    editar: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    },
+    eliminar: {
+        type: Boolean,
+        default: false, // Valor por defecto puede ser true o false
+    },
 })
 
 const Swal = inject('$swal')
 
 onMounted(() => {
-  console.log(props.listado)
-  datas.list = props.listado
+    console.log(props.condominios)
+    datas.list_condominio = props.condominios
+    datas.list = props.listado
+    datas.condominio_id = 1
 })
 
 const datas = reactive({
-  list: [],
-  isLoad: false,
-  dateStart: '',
-  dateEnd: '',
-  messageList: '',
-  metodoList: '',
+    list: [],
+    list_condominio: [],
+    isLoad: false,
+    dateStart: '',
+    dateEnd: '',
+    messageList: '',
+    metodoList: '',
+    condominio_id: 0
 })
 
 const query = ref('')
+// const condominio_id = ref()
+
+const handleSelectChange = (e) => {
+    console.log(e.target.value)
+    queryList(query.value)
+}
 
 const onSearchQuery = (e) => {
-  queryList(e.target.value)
+    console.log(e.target.value)
+    queryList(e.target.value)
 }
 
 const onSearchDate = () => {
-  console.log(datas.dateStart)
-  console.log(datas.dateEnd)
-  if (datas.dateStart.length > 0 && datas.dateEnd.length > 0) {
-    var start = fecha(datas.dateStart)
-    var end = fecha(datas.dateEnd)
-    console.log(start)
-    console.log(end)
-    queryDateList(start, end)
-  } else {
-    queryList('')
-  }
+    console.log(datas.dateStart)
+    console.log(datas.dateEnd)
+    if (datas.dateStart.length > 0 && datas.dateEnd.length > 0) {
+        var start = fecha(datas.dateStart)
+        var end = fecha(datas.dateEnd)
+        console.log(start)
+        console.log(end)
+        queryDateList(start, end)
+    } else {
+        queryList('')
+    }
 }
 
-const queryDateList = async (date_start, date_end) => {
-  datas.isLoad = true
-  const url = route('appingreso.queryDate', {
-    start: date_start,
-    end: date_end,
-  })
-  await axios
-    .post(url)
-    .then((response) => {
-      console.log(response.data)
-      if (response.data.isSuccess) {
-        datas.list = response.data.data
-        datas.messageList = response.data.message
-        datas.metodoList =
-          datas.list.length > 0
-            ? ' con: Inicio' + date_start + ' | Fin' + date_end
-            : ''
-        console.log(datas.list.length)
-      } else {
-        datas.list = []
-      }
+/*const queryDateList = async (date_start, date_end) => {
+    datas.isLoad = true
+    const url = route('appingreso.queryDate', {
+        start: date_start,
+        end: date_end,
     })
-    .catch((error) => {
-      console.log('respuesta error')
-      console.log(error)
-    })
-  datas.isLoad = false
-}
+    await axios
+        .post(url)
+        .then((response) => {
+            console.log(response.data)
+            if (response.data.isSuccess) {
+                datas.list = response.data.data
+                datas.messageList = response.data.message
+                datas.metodoList =
+                    datas.list.length > 0
+                        ? ' con: Inicio' + date_start + ' | Fin' + date_end
+                        : ''
+                console.log(datas.list.length)
+            } else {
+                datas.list = []
+            }
+        })
+        .catch((error) => {
+            console.log('respuesta error')
+            console.log(error)
+        })
+    datas.isLoad = false
+}*/
 
 const queryList = async (consulta) => {
-  datas.isLoad = true
-  const url = route('vivienda.query', { query: consulta.toUpperCase() })
-  await axios
-    .post(url)
-    .then((response) => {
-      if (response.data.isSuccess) {
-        datas.list = response.data.data
-        datas.messageList = response.data.message
-        datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
-      } else {
-        datas.list = []
-      }
-    })
-    .catch((error) => {
-      console.log('respuesta error')
-      console.log(error)
-    })
-  datas.isLoad = false
+    if (datas.condominio_id == 0) return;
+    datas.isLoad = true
+    console.log(datas.condominio_id)
+    const data = {
+        query: consulta.toUpperCase(),
+        condominio_id: datas.condominio_id
+    }
+    console.log(data)
+    const url = route('vivienda.query', data)
+    await axios
+        .post(url)
+        .then((response) => {
+            if (response.data.isSuccess) {
+                datas.list = response.data.data
+                datas.messageList = response.data.message
+                datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
+            } else {
+                datas.list = []
+            }
+        })
+        .catch((error) => {
+            console.log('respuesta error')
+            console.log(error)
+        })
+    datas.isLoad = false
 }
 
-const queryListSaltoTake = async (consulta, skip, take) => {
-  datas.isLoad = true
-  const url = route('vivienda.query', {
-    query: consulta.toUpperCase(),
-    skip: skip,
-    take: take,
-  })
-  await axios
-    .post(url)
-    .then((response) => {
-      console.log(response.data)
-      if (response.data.isSuccess) {
-        datas.list = response.data.data
-        datas.messageList = response.data.message
-        datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
-        console.log(datas.list.length)
-      } else {
-        datas.list = []
-      }
+/*const queryListSaltoTake = async (consulta, skip, take) => {
+    datas.isLoad = true
+    const url = route('vivienda.query', {
+        query: consulta.toUpperCase(),
+        skip: skip,
+        take: take,
     })
-    .catch((error) => {
-      console.log('respuesta error')
-      console.log(error)
-      Swal.fire({
-        title: 'Algun otro error esta sucediendo!',
-        text: error,
-        icon: 'error',
-      })
-    })
-  datas.isLoad = false
-}
+    await axios
+        .post(url)
+        .then((response) => {
+            console.log(response.data)
+            if (response.data.isSuccess) {
+                datas.list = response.data.data
+                datas.messageList = response.data.message
+                datas.metodoList = consulta.length > 0 ? ' con: ' + consulta : ''
+                console.log(datas.list.length)
+            } else {
+                datas.list = []
+            }
+        })
+        .catch((error) => {
+            console.log('respuesta error')
+            console.log(error)
+            Swal.fire({
+                title: 'Algun otro error esta sucediendo!',
+                text: error,
+                icon: 'error',
+            })
+        })
+    datas.isLoad = false
+}*/
 
 const fecha = (fechaData) => {
-  return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM a')
+    return moment.tz(fechaData, 'America/La_Paz').format('YYYY-MM-DD HH:MM a')
 }
 
 const destroyMessage = (id) => {
-  Swal.fire({
-    title: 'Estas seguro de eliminar esta información?',
-    text: '',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Si, estoy seguro!',
-  }).then((result) => {
-    if (result.isConfirmed) {
-      datas.isLoad = true
-      destroyData(id)
-      datas.isLoad = false
-    }
-  })
+    Swal.fire({
+        title: 'Estas seguro de eliminar esta información?',
+        text: '',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si, estoy seguro!',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            datas.isLoad = true
+            destroyData(id)
+            datas.isLoad = false
+        }
+    })
 }
 
 const destroyData = async (id) => {
-  const url = route('vivienda.destroy', id)
-  await axios
-    .delete(url)
-    .then((response) => {
-      console.log(response)
-      Swal.fire({
-        title: response.data.isSuccess ? 'Buen Trabajo!' : 'Error!',
-        text:
-          response.data.statusCode == 23503
-            ? 'ESTE DATO ESTA SIENDO USADO EN OTRAS TABLAS'
-            : response.data.message,
-        icon: response.data.isSuccess ? 'success' : 'error',
-      })
-      if (response.data.isSuccess) {
-        queryListSaltoTake('', 0, 20)
-      }
-    })
-    .catch((error) => {
-      if (error.response.data.isMessageError) {
-        console.log(error.message)
-        Swal.fire({
-          title: error.response.data.isMessageError
-            ? 'Error desde el micro servicio!'
-            : 'Algun otro error esta sucediendo!',
-          text: error.response.data.isMessageError
-            ? 'Algunos datos fueron mal registrados'
-            : 'Algun otro tipo de error sucedio',
-          icon: 'error',
+    const url = route('vivienda.destroy', id)
+    await axios
+        .delete(url)
+        .then((response) => {
+            console.log(response)
+            Swal.fire({
+                title: response.data.isSuccess ? 'Buen Trabajo!' : 'Error!',
+                text:
+                    response.data.statusCode == 23503
+                        ? 'ESTE DATO ESTA SIENDO USADO EN OTRAS TABLAS'
+                        : response.data.message,
+                icon: response.data.isSuccess ? 'success' : 'error',
+            })
+            if (response.data.isSuccess) {
+                queryListSaltoTake('', 0, 20)
+            }
         })
-      }
-    })
+        .catch((error) => {
+            if (error.response.data.isMessageError) {
+                console.log(error.message)
+                Swal.fire({
+                    title: error.response.data.isMessageError
+                        ? 'Error desde el micro servicio!'
+                        : 'Algun otro error esta sucediendo!',
+                    text: error.response.data.isMessageError
+                        ? 'Algunos datos fueron mal registrados'
+                        : 'Algun otro tipo de error sucedio',
+                    icon: 'error',
+                })
+            }
+        })
 }
 </script>
 
 <template>
-  <AppLayout title="Vivienda">
-    <div
-      class="p-4 md:p-2 flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700"
-    >
-      <!-- Header -->
-      <HeaderIndex :title="'Viviendas'">
-        <template #link>
-          <a
-            v-if="
-              $page.props.user.roles.includes('super-admin') ||
-              $page.props.user.permissions.includes('VIVIENDA.CREAR') ||
-              $page.props.user.permissions_roles.includes('VIVIENDA.CREAR')
-            "
-            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-            :href="route('vivienda.create')"
-          >
-            <svg
-              class="shrink-0 size-4"
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M5 12h14" />
-              <path d="M12 5v14" />
-            </svg>
-            Nuevo
-          </a>
-        </template>
-      </HeaderIndex>
-      <!-- End Header -->
-      <!-- Search Table -->
-      <FormSearch>
-        <template #search-table>
-          <div class="grid lg:grid-cols-3 gap-4 sm:gap-6">
-            <div class="w-full flex flex-col">
-              <span
-                class="text-sm font-bold text-gray-900 dark:text-neutral-400"
-              >
-                Busqueda
-              </span>
-              <div class="relative">
-                <input
-                  id="hs-table-with-pagination-search"
-                  type="text"
-                  v-model="query"
-                  @input="onSearchQuery"
-                  name="hs-table-with-pagination-search"
-                  class="py-2 px-3 ps-9 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                  placeholder="Buscar"
-                />
-                <div
-                  class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-3"
-                >
-                  <svg
-                    class="shrink-0 size-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.3-4.3"></path>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="pt-2 dark:bg-neutral-800 dark:border-neutral-700">
-            <span>{{ datas.messageList }} {{ datas.metodoList }}</span>
-          </div>
-        </template>
-      </FormSearch>
-      <!-- End Search table -->
-    </div>
-
-    <div class="flex flex-col">
-      <div class="-m-1.5 overflow-x-auto">
-        <div class="p-1.5 min-w-full inline-block align-middle">
-          <div v-if="datas.isLoad">
-            <Loader />
-          </div>
-          <div v-else>
-            <div
-              v-if="datas.list.length > 0"
-              class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700"
-            >
-              <!-- Table -->
-              <TableGrl>
-                <template #tbl-header>
-                  <tr>
-                    <th scope="col" class="px-3 text-start">
-                      <div class="flex items-center gap-x-2">
-                        <span
-                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                        >
-                          ID
-                        </span>
-                      </div>
-                    </th>
-
-                    <th class="px-3 py-3 text-start">
-                      <div class="flex items-center gap-x-2">
-                        <span
-                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                        >
-                          NRO VIVIENDA
-                        </span>
-                      </div>
-                    </th>
-                    <th class="px-3 py-3 text-start">
-                      <div class="flex items-center gap-x-2">
-                        <span
-                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                        >
-                          TIPO DE VIVIENDA
-                        </span>
-                      </div>
-                    </th>
-                    <th class="px-3 py-3 text-start">
-                      <div class="flex items-center gap-x-2">
-                        <span
-                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                        >
-                          CONDOMINIO
-                        </span>
-                      </div>
-                    </th>
-                    <th class="px-3 py-3 text-start">
-                      <div class="flex items-center gap-x-2">
-                        <span
-                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                        >
-                          VIVIENDA OCUPADA
-                        </span>
-                      </div>
-                    </th>
-                    <th class="px-3 py-3 text-start">
-                      <div class="flex items-center gap-x-2">
-                        <span
-                          class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200"
-                        >
-                          _
-                        </span>
-                      </div>
-                    </th>
-                  </tr>
+    <AppLayout title="Vivienda">
+        <div
+            class="p-4 md:p-2 flex flex-col bg-white border shadow-sm rounded-xl dark:bg-neutral-800 dark:border-neutral-700">
+            <!-- Header -->
+            <HeaderIndex :title="'Viviendas'">
+                <template #link>
+                    <a v-if="props.crear"
+                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
+                        :href="route('vivienda.create')">
+                        <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="M12 5v14" />
+                        </svg>
+                        Nuevo
+                    </a>
                 </template>
-                <template #tbl-body>
-                  <tr v-for="item in datas.list" :key="item.id">
-                    <td
-                      class="px-3 py-3 text-gray-900 whitespace-nowrap dark:text-white"
-                    >
-                      {{ item.id }}
-                    </td>
-                    <td
-                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                    >
-                      <span>
-                        {{ item.nroVivienda == null ? '' : item.nroVivienda }}
-                      </span>
-                    </td>
-                    <td
-                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                    >
-                      {{ item.detalle == null ? '' : item.detalle }}
-                    </td>
-                    <td
-                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                    >
-                      {{ item.razonSocial == null ? '' : item.razonSocial }}
-                    </td>
-                    <td
-                      class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white"
-                    >
-                      <!-- {{ item.vivienda_ocupada ? 'Ocupada' : 'No Ocupada' }} -->
-                      <div class="grow">
-                        <p class="py-1" v-if="item.vivienda_ocupada != null">
-                          <span
-                            :class="
-                              item.vivienda_ocupada
-                                ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
-                                : 'text-red-800 bg-red-100 dark:text-red-500'
-                            "
-                            class="px-2 py-1 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10"
-                          >
-                            {{
-                              item.vivienda_ocupada ? 'OCUPADA' : 'NO OCUPADA'
-                            }}
-                            <i
-                              :class="
-                                item.vivienda_ocupada
-                                  ? 'fa-solid fa-check'
-                                  : 'fa-solid fa-circle-exclamation'
-                              "
-                            ></i>
-                          </span>
-                        </p>
-                      </div>
-                    </td>
-                    <td class="px-3 py-3">
-                      <Link
-                        v-if="
-                          $page.props.user.roles.includes('super-admin') ||
-                          $page.props.user.permissions.includes('VIVIENDA.EDITAR') ||
-                          $page.props.user.permissions_roles.includes('VIVIENDA.EDITAR')
-                        "
-                        :href="route('vivienda.edit', item.id)"
-                        class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                      >
-                        Editar
-                        <i class="fa-solid fa-pencil"></i>
-                      </Link>
-                      <button
-                        type="button"
-                        v-if="
-                          $page.props.user.roles.includes('super-admin') ||
-                          $page.props.user.permissions.includes('VIVIENDA.ELIMINAR') ||
-                          $page.props.user.permissions_roles.includes('VIVIENDA.ELIMINAR')
-                        "
-                        @click="destroyMessage(item.id)"
-                        class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-                      >
-                        Eliminar
-                        <i class="fa-solid fa-trash"></i>
-                      </button>
-                    </td>
-                  </tr>
+            </HeaderIndex>
+            <!-- End Header -->
+            <!-- Search Table -->
+            <FormSearch>
+                <template #search-table>
+                    <div class="grid lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="w-full flex flex-col">
+                            <span class="text-sm font-bold text-gray-900 dark:text-neutral-400">
+                                Busqueda
+                            </span>
+                            <div class="relative">
+                                <input id="hs-table-with-pagination-search" type="text" v-model="query"
+                                    @input="onSearchQuery" name="hs-table-with-pagination-search"
+                                    class="py-2 px-3 ps-9 block w-full border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                    placeholder="Buscar" />
+                                <div class="absolute inset-y-0 start-0 flex items-center pointer-events-none ps-3">
+                                    <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24"
+                                        height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.3-4.3"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex flex-col">
+                            <span class="text-sm font-bold text-gray-900 dark:text-neutral-400">
+                                Condominios {{ datas.condominio_id }}
+                            </span>
+                            <div class="relative">
+                                <select id="selects-condominios"
+                                    class="custom bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    v-model="datas.condominio_id">
+                                    <option v-for="item in datas.list_condominio" :key="item.id" :value="item.id">
+                                        COD: {{ item.id }} / NOMBRE: {{ item.propietario }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pt-2 dark:bg-neutral-800 dark:border-neutral-700">
+                        <span>{{ datas.messageList }} {{ datas.metodoList }}</span>
+                    </div>
                 </template>
-              </TableGrl>
-              <!-- End Table -->
-            </div>
-            <Alert v-else :message="datas.messageList"></Alert>
-          </div>
+            </FormSearch>
+            <!-- End Search table -->
         </div>
-      </div>
-    </div>
-  </AppLayout>
+
+        <div class="flex flex-col">
+            <div class="-m-1.5 overflow-x-auto">
+                <div class="p-1.5 min-w-full inline-block align-middle">
+                    <div v-if="datas.isLoad">
+                        <Loader />
+                    </div>
+                    <div v-else>
+                        <div v-if="datas.list.length > 0"
+                            class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
+                            <!-- Table -->
+                            <TableGrl>
+                                <template #tbl-header>
+                                    <tr>
+                                        <th scope="col" class="px-3 text-start">
+                                            <div class="flex items-center gap-x-2">
+                                                <span
+                                                    class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    ID
+                                                </span>
+                                            </div>
+                                        </th>
+
+                                        <th class="px-3 py-3 text-start">
+                                            <div class="flex items-center gap-x-2">
+                                                <span
+                                                    class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    NRO VIVIENDA
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-3 text-start">
+                                            <div class="flex items-center gap-x-2">
+                                                <span
+                                                    class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    TIPO DE VIVIENDA
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-3 text-start">
+                                            <div class="flex items-center gap-x-2">
+                                                <span
+                                                    class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    CONDOMINIO
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th class="px-3 py-3 text-start">
+                                            <div class="flex items-center gap-x-2">
+                                                <span
+                                                    class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    VIVIENDA OCUPADA
+                                                </span>
+                                            </div>
+                                        </th>
+                                        <th v-if="props.editar || props.eliminar" class="px-3 py-3 text-start">
+                                            <div class="flex items-center gap-x-2">
+                                                <span
+                                                    class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-neutral-200">
+                                                    _
+                                                </span>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </template>
+                                <template #tbl-body>
+                                    <tr v-for="item in datas.list" :key="item.id">
+                                        <td class="px-3 py-3 text-gray-900 whitespace-nowrap dark:text-white">
+                                            {{ item.id }}
+                                        </td>
+                                        <td class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white">
+                                            <span>
+                                                {{ item.nroVivienda == null ? '' : item.nroVivienda }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white">
+                                            {{ item.detalle == null ? '' : item.detalle }}
+                                        </td>
+                                        <td class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white">
+                                            {{ item.razonSocial == null ? '' : item.razonSocial }}
+                                        </td>
+                                        <td class="px-3 py-3 text-sm text-gray-500 whitespace-nowrap dark:text-white">
+                                            <!-- {{ item.vivienda_ocupada ? 'Ocupada' : 'No Ocupada' }} -->
+                                            <div class="grow">
+                                                <p class="py-1" v-if="item.vivienda_ocupada != null">
+                                                    <span :class="item.vivienda_ocupada
+                                                        ? 'text-teal-800 bg-teal-100 dark:text-teal-500'
+                                                        : 'text-red-800 bg-red-100 dark:text-red-500'
+                                                        "
+                                                        class="px-2 py-1 inline-flex items-center gap-x-1 text-xs font-medium rounded-full dark:bg-teal-500/10">
+                                                        {{
+                                                            item.vivienda_ocupada ? 'OCUPADA' : 'NO OCUPADA'
+                                                        }}
+                                                        <i :class="item.vivienda_ocupada
+                                                            ? 'fa-solid fa-check'
+                                                            : 'fa-solid fa-circle-exclamation'
+                                                            "></i>
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </td>
+                                        <td v-if="props.editar || props.eliminar" class="px-3 py-3">
+                                            <Link v-if="props.editar" :href="route('vivienda.edit', item.id)"
+                                                class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
+                                            Editar
+                                            <i class="fa-solid fa-pencil"></i>
+                                            </Link>
+                                            <button type="button" v-if="props.eliminar" @click="destroyMessage(item.id)"
+                                                class="py-1 px-2 bg-red-600 hover:bg-red-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
+                                                Eliminar
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </TableGrl>
+                            <!-- End Table -->
+                        </div>
+                        <Alert v-else :message="datas.messageList"></Alert>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AppLayout>
 </template>
+<script>
+/* $(function () {
+    $('.custom').select2()
+}) */
+</script>

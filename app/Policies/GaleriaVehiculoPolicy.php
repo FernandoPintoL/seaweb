@@ -13,7 +13,7 @@ class GaleriaVehiculoPolicy
      */
     public function viewAny(User $user): bool
     {
-        //
+        return $user->canIndex('GALERIA_VEHICULO');
     }
 
     /**
@@ -21,7 +21,7 @@ class GaleriaVehiculoPolicy
      */
     public function view(User $user, GaleriaVehiculo $galeriaVehiculo): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -29,7 +29,7 @@ class GaleriaVehiculoPolicy
      */
     public function create(User $user): bool
     {
-        //
+        return $user->canCrear('GALERIA_VEHICULO');
     }
 
     /**
@@ -37,7 +37,7 @@ class GaleriaVehiculoPolicy
      */
     public function update(User $user, GaleriaVehiculo $galeriaVehiculo): bool
     {
-        //
+        return $user->canEditar('GALERIA_VEHICULO');
     }
 
     /**
@@ -45,7 +45,7 @@ class GaleriaVehiculoPolicy
      */
     public function delete(User $user, GaleriaVehiculo $galeriaVehiculo): bool
     {
-        //
+        return $user->canEliminar('GALERIA_VEHICULO');
     }
 
     /**
@@ -53,7 +53,7 @@ class GaleriaVehiculoPolicy
      */
     public function restore(User $user, GaleriaVehiculo $galeriaVehiculo): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 
     /**
@@ -61,6 +61,6 @@ class GaleriaVehiculoPolicy
      */
     public function forceDelete(User $user, GaleriaVehiculo $galeriaVehiculo): bool
     {
-        //
+        return $user->isSuperAdmin();
     }
 }
