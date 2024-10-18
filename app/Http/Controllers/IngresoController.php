@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Validator;
 
 class IngresoController extends Controller
 {
+    public function querySkipTake(Request $request) {}
     public function query(Request $request)
     {
         try {
@@ -70,6 +71,8 @@ class IngresoController extends Controller
 
             $salida_start    = $request->get('salida_created_at_start');
             $salida_end    = $request->get('salida_created_at_end');
+
+            $salidas_registradas = $request->get('salidas_registradas');
 
             $skip = $request->get('skip');
             $take = $request->get('take');
@@ -130,6 +133,14 @@ class IngresoController extends Controller
                 ->when(!is_null($salida_start) && !is_null($salida_end), function ($query) use ($salida_start, $salida_end) {
                     // $query->where('i.salida_created_at', $salidaCreatedAt);
                     $query->whereBetween('i.salida_created_at', [$salida_start, $salida_end]);
+                })
+
+                ->when(!is_null($salidas_registradas) && $salidas_registradas, function ($query) use ($salidas_registradas) {
+                    $query->whereNotNull('i.salida_created_at');
+                })
+
+                ->when(!is_null($salidas_registradas) && !$salidas_registradas, function ($query) use ($salidas_registradas) {
+                    $query->whereNull('i.salida_created_at');
                 })
                 // SKIP O TAKE
                 ->when(!is_null($skip) && !is_null($take), function ($query) use ($skip, $take) {
