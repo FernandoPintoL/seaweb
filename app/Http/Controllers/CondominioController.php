@@ -139,10 +139,12 @@ class CondominioController extends Controller
                     "statusCode" => 422
                 ], 422);
             }
+
             $validatorUser = Validator::make($userRequest, [
                 'email' => ['unique:users'],
                 'usernick' => ['unique:users']
             ]);
+
             if ($validatorUser->fails()) {
                 return response()->json([
                     "isRequest" => true,
@@ -153,7 +155,6 @@ class CondominioController extends Controller
                     "data" => []
                 ], 422);
             }
-
 
             $condominio = $request->all();
             $perfil        = Perfil::create($perfilRequest);
@@ -255,6 +256,7 @@ class CondominioController extends Controller
                 'created_at' => $request->created_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->created_at,
                 'updated_at' => $request->updated_at == null ? date_create('now')->format('Y-m-d H:i:s') : $request->updated_at
             ]);
+
             $permisos  = [
                 $name_permission_mostrar,
                 $name_permission_listar,
@@ -276,7 +278,6 @@ class CondominioController extends Controller
             $user->condominios()->attach($responsse->id, [
                 'permisos' => json_encode($permisos)
             ]);
-
 
             return response()->json([
                 "isRequest" => true,

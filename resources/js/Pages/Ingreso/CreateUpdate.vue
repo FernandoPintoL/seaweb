@@ -57,6 +57,7 @@ const form = useForm({
 })
 
 onMounted(() => {
+    console.log(props.residentes)
     reactives.list_residentes = props.residentes;
     reactives.list_visitantes = props.visitantes;
     reactives.list_vehiculos = props.vehiculos;
@@ -411,7 +412,7 @@ const now = () => {
                         class="custom bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         v-model="form.residente_habitante_id">
                         <option v-for="item in reactives.list_residentes" :key="item.id" :value="item.id">
-                            Cod: {{ item.id }} | Residente: {{ item.name }}
+                            Cod: {{ item.id }} | Residente: {{ item.name }} | {{ item.propietario }}
                         </option>
                     </select>
                 </div>
@@ -435,7 +436,7 @@ const now = () => {
                         class="custom bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         v-model="form.visitante_id">
                         <option v-for="item in reactives.list_visitantes" :key="item.id" :value="item.id">
-                            Cod: {{ item.id }} | Visitante: {{ item.name }}
+                            {{ item.perfil.name }} | Doc.: {{ item.perfil.nroDocumento }}
                         </option>
                     </select>
                 </div>

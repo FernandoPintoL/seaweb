@@ -24,6 +24,7 @@ const props = defineProps({
 
 onMounted(() => {
     // queryDocument('')
+    console.log(props.model)
 })
 
 const form = useForm({
@@ -217,6 +218,7 @@ const setErrorRazonSocial = (value) => {
 
 const createInformacion = async () => {
     console.log(form)
+
     const url = route('condominio.store', form)
     await axios
         .post(url)
@@ -357,6 +359,14 @@ const changeInputPassword = () => {
                 </p>
                 <p>
                     Complete correctamente los datos personales
+                </p>
+                <p v-if="props.model != null">
+                    <br />
+                    <Link v-if="props.editar" :href="route('users.edit', props.model.user_id)"
+                        class="py-1 px-2 bg-blue-600 hover:bg-blue-700 focus:bg-red-700' inline-flex items-center gap-x-2 -ms-px first:rounded-s-lg first:ms-0 last:rounded-e-lg text-sm font-medium focus:z-10 border border-gray-200 text-white shadow-sm focus:outline-none disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800">
+                    Asignar mas roles o condominios
+                    <i class="fa-solid fa-pencil"></i>
+                    </Link>
                 </p>
             </template>
 

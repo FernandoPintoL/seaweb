@@ -25,42 +25,6 @@ class IngresoController extends Controller
     {
         try {
             $responsse = [];
-            /*if ($request->get('skip') == null && $request->get('take') == null) {
-
-            } else {
-                $skip = $request->get('skip');
-                $take = $request->get('take');
-                $responsse = DB::table('ingresos as i')
-                    ->select(
-                        'i.id as id',
-                        'i.*',
-                        'h.id as id_residente',
-                        'p.name as name_residente',
-                        'p.nroDocumento as nroDocumento_residente',
-                        'vvd.id as id_vivienda',
-                        'vvd.nroVivienda',
-                        'c.propietario',
-                        'v.id as id_visitante',
-                        'v.is_permitido',
-                        'v.description_is_no_permitido',
-                        'pv.nroDocumento as nroDocumento_visitante',
-                        'pv.name as name_visitante',
-                        'tv.id as tv_id',
-                        'tv.sigla as tv_sigla',
-                        'tv.detalle as tv_detalle'
-                    )
-                    ->join('habitantes as h', 'h.id', '=', 'i.residente_habitante_id')
-                    ->join('viviendas as vvd', 'h.vivienda_id', '=', 'vvd.id')
-                    ->join('condominios as c', 'vvd.condominio_id', '=', 'c.id')
-                    ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
-                    ->join('visitantes as v', 'v.id', '=', 'i.visitante_id')
-                    ->join('perfils as pv', 'v.perfil_id', '=', 'pv.id')
-                    ->join('tipo_visitas as tv', 'i.tipo_visita_id', '=', 'tv.id')
-                    ->skip($skip)
-                    ->take($take)
-                    ->orderBy('id', 'DESC')
-                    ->get();
-            }*/
             $queryStr    = $request->get('query');
             $queryUpper = strtoupper($queryStr);
 
@@ -255,7 +219,7 @@ class IngresoController extends Controller
             $condominios = $user->condominios->toArray();
             $condominio = $user->condominio;
             if ($condominio) {
-                array_push($condominios, $condominio);
+                // array_push($condominios, $condominio);
                 $idUserCondominio = $user->id;
             }
         }
@@ -314,9 +278,8 @@ class IngresoController extends Controller
         $crear = $user->canCrear('INGRESO');
         $editar = $user->canEditar('INGRESO');
         $isAdmin = $user->isSuperAdmin();
-        if ($isAdmin) {
-            $residentes = Condominio::all();
-        } else {
+        $condominio_ids = [];
+        if (!$isAdmin) {
             $condominios = $user->condominios;
             $condominio_ids = $condominios->pluck('id')->toArray();
         }
@@ -331,7 +294,8 @@ class IngresoController extends Controller
                 'p.celular',
                 'vd.id as id_vivienda',
                 'vd.nroVivienda',
-                'c.razonSocial'
+                'c.razonSocial',
+                'c.propietario'
             )
             ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
             ->join('viviendas as vd', 'h.vivienda_id', '=', 'vd.id')
@@ -343,7 +307,7 @@ class IngresoController extends Controller
         }
         // Ejecuta la consulta
         $residentes = $query->get();
-        $visitantes = Visitante::all();
+        $visitantes = Visitante::with('perfil')->get();
         $vehiculos = Vehiculo::all();
         $tipo_visitas = TipoVisita::all();
 
@@ -480,9 +444,8 @@ class IngresoController extends Controller
         $crear = $user->canCrear('INGRESO');
         $editar = $user->canEditar('INGRESO');
         $isAdmin = $user->isSuperAdmin();
-        if ($isAdmin) {
-            $residentes = Condominio::all();
-        } else {
+        $condominio_ids = [];
+        if (!$isAdmin) {
             $condominios = $user->condominios;
             $condominio_ids = $condominios->pluck('id')->toArray();
         }
@@ -497,7 +460,8 @@ class IngresoController extends Controller
                 'p.celular',
                 'vd.id as id_vivienda',
                 'vd.nroVivienda',
-                'c.razonSocial'
+                'c.razonSocial',
+                'c.propietario'
             )
             ->join('perfils as p', 'h.perfil_id', '=', 'p.id')
             ->join('viviendas as vd', 'h.vivienda_id', '=', 'vd.id')
@@ -509,7 +473,7 @@ class IngresoController extends Controller
         }
         // Ejecuta la consulta
         $residentes = $query->get();
-        $visitantes = Visitante::all();
+        $visitantes = Visitante::with('perfil')->get();
         $vehiculos = Vehiculo::all();
         $tipo_visitas = TipoVisita::all();
         return Inertia::render("Ingreso/CreateUpdate", [
