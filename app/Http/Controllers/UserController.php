@@ -134,7 +134,13 @@ class UserController extends Controller
                 );
                 if (Auth::attempt($userData)) {
                     Auth::login($user);
-                    $userLogin = auth()->user();
+                    $user = auth()->user();
+                    $condominio = $user->condominio;
+                    $userLogin = [
+                        'user' => $user,
+                        'condominio' => $condominio
+                    ];
+
                     return response()->json([
                         "isRequest" => true,
                         "isSuccess" => true,

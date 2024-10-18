@@ -23,8 +23,6 @@ class IngresoController extends Controller
     public function query(Request $request)
     {
         try {
-            // return "MENSAJE";
-            // return $request->all();
             $responsse = [];
             /*if ($request->get('skip') == null && $request->get('take') == null) {
 

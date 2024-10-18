@@ -52,7 +52,7 @@ const changeInputPassword = () => {
         <div
           class="border border-gray-300 rounded-lg p-6 max-w-md shadow-[0_2px_22px_-4px_rgba(93,96,127,0.2)] max-md:mx-auto"
         >
-          <form class="space-y-4" @submit.prevent="submit">
+          <form class="space-y-4" @submit="submit">
             <div class="mb-8">
               <h3 class="text-gray-800 text-3xl font-extrabold">
                 Iniciar Sessión
