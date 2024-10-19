@@ -113,7 +113,6 @@ class UserController extends Controller
     public function loginOnApi(StoreLoginRequest $request)
     {
         try {
-            // return $request->all();
             $user = User::where('usernick', $request->usernick)
                 ->orWhere('email', $request->usernick)->first();
             if ($user == null) {
@@ -122,7 +121,7 @@ class UserController extends Controller
                     "isSuccess" => false,
                     "isMessageError" => true,
                     "message" => "Error Usuario no encontrado...",
-                    "messageError" => "",
+                    "messageError" => ['usernick' => "Usuario no encontrado"],
                     "data" => [],
                     "statusCode" => 422,
                 ], 422);
@@ -151,7 +150,7 @@ class UserController extends Controller
                         "isSuccess" => false,
                         "isMessageError" => true,
                         "message" => "Usuario no pudó ser autenticado",
-                        "messageError" => "",
+                        "messageError" => ['usernick' => "Usuario no pudo ser autenticado"],
                         "data" => $user,
                         "statusCode" => 422
                     ], 422);
@@ -162,7 +161,7 @@ class UserController extends Controller
                     "isSuccess" => false,
                     "isMessageError" => true,
                     "message" => "Usuario encontrado, el password es incorrecto...",
-                    "messageError" => "",
+                    "messageError" => ['password' => "Password incorrecto"],
                     "data" => $user,
                     "statusCode" => 422
                 ], 422);
@@ -175,7 +174,81 @@ class UserController extends Controller
                 "isSuccess" => false,
                 "isMessageError" => true,
                 "message" => $message,
-                "messageError" => "",
+                "messageError" => $message,
+                "data" => [],
+                "statusCode" => $code
+            ]);
+        }
+    }
+
+
+    public function loginOnApiWeb(StoreLoginRequest $request)
+    {
+        try {
+            $user = User::where('usernick', $request->usernick)
+                ->orWhere('email', $request->usernick)->first();
+            if ($user == null) {
+                return response()->json([
+                    "isRequest" => true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
+                    "message" => "Error Usuario no encontrado...",
+                    "messageError" => ['usernick' => "Usuario no encontrado"],
+                    "data" => [],
+                    "statusCode" => 422,
+                ], 422);
+            }
+            if ($user && Hash::check($request->password, $user->password)) {
+                $userData = array(
+                    'email' => $user->email,
+                    'password' => $request->password
+                );
+                if (Auth::attempt($userData)) {
+                    Auth::login($user);
+                    $user = auth()->user();
+                    $user->condominio;
+                    dd($user);
+                    return redirect()->route('dashboard');
+                    /*return response()->json([
+                        "isRequest" => true,
+                        "isSuccess" => true,
+                        "isMessageError" => false,
+                        "message" => "Inicio de sessión correcto...",
+                        "messageError" => "",
+                        "data" => $user,
+                        "statusCode" => 200
+                    ]);*/
+                } else {
+                    return response()->json([
+                        "isRequest" => true,
+                        "isSuccess" => false,
+                        "isMessageError" => true,
+                        "message" => "Usuario no pudó ser autenticado",
+                        "messageError" => ['usernick' => "Usuario no pudo ser autenticado"],
+                        "data" => $user,
+                        "statusCode" => 422
+                    ], 422);
+                }
+            } else {
+                return response()->json([
+                    "isRequest" => true,
+                    "isSuccess" => false,
+                    "isMessageError" => true,
+                    "message" => "Usuario encontrado, el password es incorrecto...",
+                    "messageError" => ['password' => "Password incorrecto"],
+                    "data" => $user,
+                    "statusCode" => 422
+                ], 422);
+            }
+        } catch (\Exception $e) {
+            $message = $e->getMessage();
+            $code = $e->getCode();
+            return response()->json([
+                "isRequest" => true,
+                "isSuccess" => false,
+                "isMessageError" => true,
+                "message" => $message,
+                "messageError" => $message,
                 "data" => [],
                 "statusCode" => $code
             ]);

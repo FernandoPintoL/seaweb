@@ -1,7 +1,10 @@
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, inject } from 'vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import InputError from '@/Components/InputError.vue'
+// import { Inertia } from '@inertiajs/inertia';
+
+const Swal = inject('$swal')
 
 defineProps({
     canResetPassword: Boolean,
@@ -9,13 +12,15 @@ defineProps({
 })
 
 const form = useForm({
-    email: '',
+    usernick: '',
     password: '',
     remember: false,
 })
 
 const reactives = reactive({
     isPassword: true,
+    usernickError: '',
+    passwordError: ''
 })
 
 const login = () => {
@@ -24,10 +29,72 @@ const login = () => {
             ...data,
             remember: form.remember ? 'on' : '',
         }))
-        .post(route('login'))
-        .then(() => {
-            if (!form.hasErrors) {
-                form.reset('password') // Solo resetea si no hay errores
+        .post(route('login'), {
+            onFinish: () => {
+                if (!form.hasErrors) {
+                    form.reset('password') // Solo resetea si no hay errores
+                }
+            },
+        })
+    /* .then(() => {
+        if (!form.hasErrors) {
+            form.reset('password') // Solo resetea si no hay errores
+        }
+    }) */
+    // iniciar_session()
+}
+
+const setErrorUsernickError = (value) => {
+    console.log(value)
+    reactives.usernickError = value
+}
+
+const setErrorPassword = (value) => {
+    console.log(value)
+    reactives.passwordError = value
+}
+
+const iniciar_session = async () => {
+    const url = route('appusers.loginOnApiWeb', form)
+    await axios
+        .post(url)
+        .then((response) => {
+            console.log(response)
+            Swal.fire({
+                position: 'top-end',
+                icon: response.data.isSuccess ? 'success' : 'error',
+                title: response.data.message,
+                showConfirmButton: false,
+                timer: 1500,
+            })
+            if (response.data.isSuccess) {
+                setErrorPassword('')
+                setErrorUsernickError('')
+                form.reset()
+                window.location = '/dashboard'
+            }
+        })
+        .catch((error) => {
+            console.log(error)
+            Swal.fire({
+                position: 'top-end',
+                icon: 'error',
+                title: error.response.data.message,
+                showConfirmButton: false,
+                timer: 1500,
+            })
+            if (error.response.data.isMessageError) {
+                if (error.response.data.messageError.usernick != null) {
+                    setErrorUsernickError(error.response.data.message)
+                } else {
+                    setErrorUsernickError('')
+                }
+                if (error.response.data.messageError.password != null) {
+                    setErrorPassword(error.response.data.message)
+                } else {
+                    setErrorPassword('')
+                }
+
             }
         })
 }
@@ -54,13 +121,14 @@ const changeInputPassword = () => {
                             <p class="text-gray-500 text-sm mt-4 leading-relaxed"></p>
                         </div>
                         <div>
-                            <label class="block text-sm mb-2 dark:text-white">Email</label>
+                            <label class="block text-sm mb-2 dark:text-white">Email o UserNick</label>
                             <div class="relative">
-                                <input v-model="form.email" name="username" type="text" required
+                                <input v-model="form.usernick" name="usernick" type="text" required
                                     class="w-full text-sm text-gray-800 border border-gray-300 px-4 py-3 rounded-lg outline-blue-600"
                                     placeholder="Ingresar Email" />
                             </div>
                             <InputError class="mt-2" :message="form.errors.email" />
+                            <!-- <InputError class="mt-2" :message="reactives.usernickError" /> -->
                         </div>
                         <div class="col-span-12 sm:col-span-12">
                             <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -77,6 +145,7 @@ const changeInputPassword = () => {
                                     placeholder="Ingrese password" />
                             </div>
                             <InputError class="mt-2" :message="form.errors.passwordError" />
+                            <!-- <InputError class="mt-2" :message="reactives.passwordError" /> -->
                         </div>
                         <div class="!mt-8">
                             <button type="submit"

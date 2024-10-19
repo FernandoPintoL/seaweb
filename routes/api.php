@@ -23,6 +23,7 @@ Route::get('/appuser', function (Request $request) {
 Route::post('/appusers/consultar', [UserController::class, 'consultar'])->name('appusers.consultar');
 Route::post('/appusers/registerOnApi', [UserController::class, 'registerOnApi'])->name('appusers.registerOnApi');
 Route::post('/appusers/loginOnApi', [UserController::class, 'loginOnApi'])->name('appusers.loginOnApi');
+Route::post('/appusers/loginOnApiWeb', [UserController::class, 'loginOnApiWeb'])->name('appusers.loginOnApiWeb');
 Route::post('/appusers/logout', [UserController::class, 'logout'])->name('appusers.logout');
 
 /* TIPO PERFIL RUTAS */

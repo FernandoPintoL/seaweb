@@ -217,8 +217,6 @@ const setErrorRazonSocial = (value) => {
 }
 
 const createInformacion = async () => {
-    console.log(form)
-
     const url = route('condominio.store', form)
     await axios
         .post(url)

@@ -50,7 +50,7 @@ Route::middleware([
             $condominios = $user->condominios->toArray();
             $condominio = $user->condominio;
             if ($condominio) {
-                array_push($condominios, $condominio);
+                // array_push($condominios, $condominio);
                 $idUserCondominio = $user->id;
             }
         }
