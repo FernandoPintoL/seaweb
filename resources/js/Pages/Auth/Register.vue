@@ -66,7 +66,6 @@ const submit = () => {
           v-model="form.usernick"
           type="text"
           class="mt-1 block w-full"
-          required
           autocomplete="usernick"
         />
         <InputError class="mt-2" :message="form.errors.usernick" />

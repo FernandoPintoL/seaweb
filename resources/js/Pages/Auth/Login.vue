@@ -121,13 +121,13 @@ const changeInputPassword = () => {
                             <p class="text-gray-500 text-sm mt-4 leading-relaxed"></p>
                         </div>
                         <div>
-                            <label class="block text-sm mb-2 dark:text-white">Email o UserNick</label>
+                            <label class="block text-sm mb-2 dark:text-white">UserNick</label>
                             <div class="relative">
                                 <input v-model="form.usernick" name="usernick" type="text" required
                                     class="w-full text-sm text-gray-800 border border-gray-300 px-4 py-3 rounded-lg outline-blue-600"
                                     placeholder="Ingresar Email" />
                             </div>
-                            <InputError class="mt-2" :message="form.errors.email" />
+                            <InputError class="mt-2" :message="form.errors.usernick" />
                             <!-- <InputError class="mt-2" :message="reactives.usernickError" /> -->
                         </div>
                         <div class="col-span-12 sm:col-span-12">

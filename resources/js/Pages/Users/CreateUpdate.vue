@@ -138,7 +138,8 @@ const onValidateUserNick = (e) => {
 }
 
 const onValidateEmail = (e) => {
-    if (!/^[a-zA-Z0-9.]+@[a-zA-Z]+\.[a-zA-Z]+$/.test(e.target.value)) {
+    const email = e.target.value
+    if (email && !/^[a-zA-Z0-9.]+@[a-zA-Z]+\.[a-zA-Z]+$/.test(email)) {
         reactives.emailError = 'El campo debe ser tipo Email'
     } else {
         reactives.emailError = ''
@@ -412,8 +413,8 @@ const changeInputPassword = () => {
             </template>
 
             <template #actions>
-                <PrimaryButton v-if="props.crear || props.editar"
-                    :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <PrimaryButton v-if="props.crear || props.editar" :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing">
                     Guardar
                 </PrimaryButton>
             </template>
