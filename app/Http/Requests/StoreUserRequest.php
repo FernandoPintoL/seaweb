@@ -7,6 +7,7 @@ use Laravel\Jetstream\Jetstream;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\Rules\Password;
+
 class StoreUserRequest extends FormRequest
 {
     /**
@@ -25,19 +26,19 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required','unique:users'],
-            'email' => ['required', 'email', 'unique:users'],
+            'name' => ['required', 'unique:users'],
+            'email' => ['email', 'unique:users'],
             'usernick' => ['required', 'unique:users'],
             'password' => ['required', Password::default(), 'confirmed'],
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ];
     }
 
-    public function messages(){
+    public function messages()
+    {
         return [
             'name.required' => 'El :attribute es obligatorio.',
             'name.unique' => 'El :attribute esta siendo usado.',
-            'email.required' => 'El :attribute es obligatorio.',
             'email.email' => 'El :attribute es de tipo email.',
             'email.unique' => 'El :attribute esta siendo usado.',
             'usernick.required' => 'El :attribute es obligatorio.',
@@ -46,9 +47,10 @@ class StoreUserRequest extends FormRequest
             'password.confirmed' => ' :attribute no esta confirmado.',
         ];
     }
-    protected function failedValidation(Validator $validator){
+    protected function failedValidation(Validator $validator)
+    {
         throw new HttpResponseException(response()->json([
-            "isRequest"=> true,
+            "isRequest" => true,
             "isSuccess" => false,
             "isMessageError" => true,
             "message" => $validator->errors(),

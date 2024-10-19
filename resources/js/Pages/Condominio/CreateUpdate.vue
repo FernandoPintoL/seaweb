@@ -154,7 +154,8 @@ const onValidateUserNick = (e) => {
 }
 
 const onValidateEmail = (e) => {
-    if (!/^[a-zA-Z0-9.]+@[a-zA-Z]+\.[a-zA-Z]+$/.test(e.target.value)) {
+    const email = e.target.value
+    if (email && !/^[a-zA-Z0-9.]+@[a-zA-Z]+\.[a-zA-Z]+$/.test(email)) {
         reactives.emailError = 'El campo debe ser tipo Email'
     } else {
         reactives.emailError = ''
@@ -217,6 +218,10 @@ const setErrorRazonSocial = (value) => {
 }
 
 const createInformacion = async () => {
+    if (form.user.email.length == 0) {
+        form.user.email = form.user.usernick + "@gmail.com"
+        form.perfil.email = form.user.usernick + "@gmail.com"
+    }
     const url = route('condominio.store', form)
     await axios
         .post(url)

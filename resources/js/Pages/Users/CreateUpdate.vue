@@ -172,7 +172,9 @@ const setErrorUserNick = (value) => {
 }
 
 const createInformacion = async () => {
-    console.log(form)
+    if (form.email.length == 0) {
+        form.email = form.usernick + "@gmail.com"
+    }
     const url = route('users.store', form)
     await axios
         .post(url)
