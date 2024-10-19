@@ -29,13 +29,7 @@ const login = () => {
             ...data,
             remember: form.remember ? 'on' : '',
         }))
-        .post(route('login'), {
-            onFinish: () => {
-                if (!form.hasErrors) {
-                    form.reset('password') // Solo resetea si no hay errores
-                }
-            },
-        })
+        .post(route('login'))
     /* .then(() => {
         if (!form.hasErrors) {
             form.reset('password') // Solo resetea si no hay errores
